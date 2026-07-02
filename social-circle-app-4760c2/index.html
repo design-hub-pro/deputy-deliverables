@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circle — Keep in touch with the people who matter</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #191c26;
+    --surface-2: #21252f;
+    --border: #2c313d;
+    --text: #e7e9ee;
+    --muted: #8b91a1;
+    --accent: #7c6cf6;
+    --accent-soft: #7c6cf62a;
+    --green: #3ecf8e;
+    --amber: #f5a623;
+    --red: #f76c6c;
+    --radius: 14px;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -10%, #1c2030 0%, var(--bg) 55%);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  input, select, textarea {
+    font-family: inherit; font-size: 14px;
+    background: var(--surface-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; width: 100%; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  label { font-size: 12px; color: var(--muted); display: block; margin: 0 0 6px 2px; }
+  ::placeholder { color: #5b6172; }
+
+  /* Layout */
+  .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar {
+    background: rgba(15,17,23,.6); border-right: 1px solid var(--border);
+    padding: 22px 16px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 26px; padding: 0 6px; }
+  .brand .logo {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #4dd6c4);
+    display: grid; place-items: center; font-weight: 800; color: #fff; font-size: 18px;
+  }
+  .brand h1 { font-size: 17px; letter-spacing: .2px; }
+  .nav button {
+    display: flex; align-items: center; gap: 11px; width: 100%;
+    background: transparent; border: none; color: var(--muted);
+    padding: 11px 12px; border-radius: 10px; font-size: 14px; text-align: left; margin-bottom: 3px;
+  }
+  .nav button .ic { width: 18px; text-align: center; font-size: 15px; }
+  .nav button:hover { background: var(--surface); color: var(--text); }
+  .nav button.active { background: var(--accent-soft); color: #fff; font-weight: 600; }
+  .nav .badge { margin-left: auto; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
+  .sidebar .foot { margin-top: auto; display: flex; gap: 8px; flex-direction: column; }
+  .sidebar .foot button {
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    padding: 8px; border-radius: 9px; font-size: 12px;
+  }
+  .sidebar .foot button:hover { color: var(--text); }
+
+  .main { padding: 30px 36px 60px; max-width: 1100px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+  .page-head h2 { font-size: 24px; }
+  .page-head p.sub { color: var(--muted); font-size: 14px; margin-top: 3px; }
+
+  .btn {
+    background: var(--accent); color: #fff; border: none; padding: 10px 16px;
+    border-radius: 10px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn.ghost { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  .btn.sm { padding: 7px 12px; font-size: 13px; }
+
+  /* Stat cards */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+  .stat .n { font-size: 30px; font-weight: 800; }
+  .stat .l { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .stat .n.warn { color: var(--amber); }
+  .stat .n.bad { color: var(--red); }
+  .stat .n.good { color: var(--green); }
+
+  .section-title { font-size: 14px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin: 4px 0 14px; }
+
+  /* Contact list */
+  .toolbar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .toolbar input { max-width: 280px; }
+  .toolbar select { max-width: 180px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: border-color .15s, transform .15s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card .top { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+    font-weight: 700; color: #fff; font-size: 17px; flex-shrink: 0;
+  }
+  .card .name { font-weight: 600; font-size: 15px; }
+  .card .rel { color: var(--muted); font-size: 12.5px; }
+  .tier-chip { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .status-row { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; }
+  .status-dot { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .card .actions { display: flex; gap: 8px; margin-top: 2px; }
+  .card .actions button {
+    flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    padding: 7px; border-radius: 9px; font-size: 12.5px;
+  }
+  .card .actions button:hover { border-color: var(--accent); }
+  .card .actions button.primary { background: var(--accent-soft); border-color: transparent; color: #cfc7ff; }
+
+  .empty { text-align: center; color: var(--muted); padding: 60px 20px; }
+  .empty .big { font-size: 40px; margin-bottom: 10px; }
+
+  /* Reminders */
+  .rem-list { display: flex; flex-direction: column; gap: 10px; }
+  .rem {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 14px;
+  }
+  .rem.overdue { border-left-color: var(--red); }
+  .rem.duesoon { border-left-color: var(--amber); }
+  .rem .meta { flex: 1; }
+  .rem .meta .nm { font-weight: 600; }
+  .rem .meta .dt { font-size: 12.5px; color: var(--muted); }
+  .rem .when { font-size: 12.5px; font-weight: 600; text-align: right; white-space: nowrap; }
+
+  /* Modal */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(6,7,11,.72); backdrop-filter: blur(3px);
+    display: none; place-items: center; z-index: 50; padding: 20px;
+  }
+  .overlay.show { display: grid; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    width: 100%; max-width: 520px; box-shadow: var(--shadow); max-height: 90vh; overflow-y: auto;
+  }
+  .modal .m-head { padding: 20px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal .m-head h3 { font-size: 18px; }
+  .modal .m-head button { background: none; border: none; color: var(--muted); font-size: 22px; line-height: 1; }
+  .modal .m-body { padding: 22px; display: flex; flex-direction: column; gap: 15px; }
+  .modal .m-foot { padding: 16px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+  textarea { resize: vertical; min-height: 60px; }
+
+  /* Detail history */
+  .timeline { display: flex; flex-direction: column; gap: 0; margin-top: 4px; }
+  .tl-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-ic { width: 32px; height: 32px; border-radius: 9px; background: var(--surface-2); display: grid; place-items: center; flex-shrink: 0; font-size: 15px; }
+  .tl-body .tl-type { font-weight: 600; font-size: 13.5px; }
+  .tl-body .tl-note { font-size: 13px; color: var(--muted); }
+  .tl-body .tl-date { font-size: 11.5px; color: #5b6172; margin-top: 2px; }
+  .del-link { color: var(--red); background: none; border: none; font-size: 12px; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+  .info-grid .cell { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; }
+  .info-grid .cell .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .info-grid .cell .v { font-size: 14px; margin-top: 2px; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    padding: 12px 20px; border-radius: 12px; box-shadow: var(--shadow); opacity: 0; transition: all .25s; z-index: 100; font-size: 14px;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 780px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; }
+    .sidebar .foot { flex-direction: row; margin: 0 0 0 auto; }
+    .nav { display: flex; gap: 4px; flex-wrap: wrap; }
+    .nav button { width: auto; }
+    .brand { margin-bottom: 0; margin-right: 12px; }
+    .main { padding: 20px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">◎</div>
+      <h1>Circle</h1>
+    </div>
+    <nav class="nav" id="nav">
+      <button data-view="dashboard" class="active"><span class="ic">◱</span> Dashboard</button>
+      <button data-view="reminders"><span class="ic">🔔</span> Reminders <span class="badge" id="navBadge" style="display:none"></span></button>
+      <button data-view="people"><span class="ic">👥</span> People</button>
+    </nav>
+    <div class="foot">
+      <button id="exportBtn">⭳ Export data</button>
+      <button id="importBtn">⭱ Import data</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+    </div>
+  </aside>
+
+  <main class="main" id="main"></main>
+</div>
+
+<!-- Contact modal -->
+<div class="overlay" id="contactOverlay">
+  <div class="modal">
+    <div class="m-head">
+      <h3 id="contactModalTitle">Add person</h3>
+      <button onclick="closeModal('contactOverlay')">×</button>
+    </div>
+    <div class="m-body">
+      <input type="hidden" id="c_id">
+      <div>
+        <label>Name *</label>
+        <input id="c_name" placeholder="Jordan Rivera">
+      </div>
+      <div class="grid2">
+        <div>
+          <label>Relationship</label>
+          <input id="c_rel" placeholder="College friend">
+        </div>
+        <div>
+          <label>Circle</label>
+          <select id="c_tier">
+            <option value="inner">Inner circle</option>
+            <option value="close" selected>Close</option>
+            <option value="friend">Friend</option>
+            <option value="acq">Acquaintance</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label>Keep in touch every (days)</label>
+          <input id="c_cadence" type="number" min="1" placeholder="30">
+        </div>
+        <div>
+          <label>Birthday</label>
+          <input id="c_bday" type="date">
+        </div>
+      </div>
+      <div>
+        <label>Contact (phone / email / handle)</label>
+        <input id="c_contact" placeholder="jordan@email.com">
+      </div>
+      <div>
+        <label>Notes — what matters to them</label>
+        <textarea id="c_notes" placeholder="Loves hiking, new job at Figma, has a dog named Miso..."></textarea>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn ghost" onclick="closeModal('contactOverlay')">Cancel</button>
+      <button class="btn" id="saveContactBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Log interaction modal -->
+<div class="overlay" id="logOverlay">
+  <div class="modal">
+    <div class="m-head">
+      <h3>Log an interaction</h3>
+      <button onclick="closeModal('logOverlay')">×</button>
+    </div>
+    <div class="m-body">
+      <input type="hidden" id="l_contactId">
+      <div id="l_withName" style="color:var(--muted);font-size:13px"></div>
+      <div class="grid2">
+        <div>
+          <label>Type</label>
+          <select id="l_type">
+            <option>Call</option><option>Text / DM</option><option>In person</option>
+            <option>Video call</option><option>Email</option><option>Social media</option><option>Gift / card</option>
+          </select>
+        </div>
+        <div>
+          <label>Date</label>
+          <input id="l_date" type="date">
+        </div>
+      </div>
+      <div>
+        <label>Notes</label>
+        <textarea id="l_note" placeholder="Caught up over coffee, they're moving in the fall..."></textarea>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn ghost" onclick="closeModal('logOverlay')">Cancel</button>
+      <button class="btn" id="saveLogBtn">Save interaction</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal">
+    <div class="m-head">
+      <h3 id="d_title">Person</h3>
+      <button onclick="closeModal('detailOverlay')">×</button>
+    </div>
+    <div class="m-body" id="detailBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Data layer ---------- */
+const STORE_KEY = 'circle.app.v1';
+const TIERS = {
+  inner:  { label: 'Inner circle', color: '#f76c6c', cadence: 14 },
+  close:  { label: 'Close',        color: '#7c6cf6', cadence: 30 },
+  friend: { label: 'Friend',       color: '#4dd6c4', cadence: 90 },
+  acq:    { label: 'Acquaintance', color: '#8b91a1', cadence: 180 },
+};
+const AVATAR_COLORS = ['#7c6cf6','#4dd6c4','#f5a623','#f76c6c','#3ecf8e','#e07cf6','#5b9df6','#f68a5b'];
+
+let state = load();
+let currentView = 'dashboard';
+let peopleFilter = { q: '', tier: 'all', sort: 'due' };
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { contacts: seed() };
+}
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+
+function seed() {
+  const today = new Date();
+  const daysAgo = d => { const x = new Date(today); x.setDate(x.getDate() - d); return x.toISOString().slice(0,10); };
+  return [
+    { id: uid(), name: 'Maya Chen', rel: 'Best friend', tier: 'inner', cadence: 14, contact: 'maya@email.com', bday: '1994-03-12', notes: 'Training for a marathon. New puppy named Cloud.', interactions: [
+      { id: uid(), type: 'In person', date: daysAgo(20), note: 'Brunch downtown, talked about her race.' },
+      { id: uid(), type: 'Text / DM', date: daysAgo(35), note: 'Checked in about her move.' } ] },
+    { id: uid(), name: 'Dad', rel: 'Family', tier: 'inner', cadence: 7, contact: '(555) 010-2288', bday: '1961-09-02', notes: 'Retired last year, getting into woodworking.', interactions: [
+      { id: uid(), type: 'Call', date: daysAgo(9), note: 'Sunday call, he finished a new table.' } ] },
+    { id: uid(), name: 'Priya Nair', rel: 'Grad school friend', tier: 'close', cadence: 30, contact: '@priya', bday: '', notes: 'Just started at a climate startup in Berlin.', interactions: [
+      { id: uid(), type: 'Video call', date: daysAgo(45), note: 'Long catch-up, she loves Berlin.' } ] },
+    { id: uid(), name: 'Marcus Webb', rel: 'Former manager', tier: 'friend', cadence: 90, contact: 'marcus.webb@email.com', bday: '', notes: 'Great mentor. Into cycling and single-origin coffee.', interactions: [
+      { id: uid(), type: 'Email', date: daysAgo(110), note: 'Sent him an article on leadership.' } ] },
+    { id: uid(), name: 'Sofia Reyes', rel: 'Neighbor', tier: 'friend', cadence: 60, contact: 'sofia@email.com', bday: '1990-06-21', notes: 'Two kids. Runs the block book club.', interactions: [
+      { id: uid(), type: 'In person', date: daysAgo(5), note: 'Ran into her at the farmers market.' } ] },
+    { id: uid(), name: 'Tom Alvarez', rel: 'College roommate', tier: 'close', cadence: 45, contact: '(555) 771-9080', bday: '', notes: 'Getting married next spring. Loves board games.', interactions: [] },
+  ];
+}
+function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); }
+
+/* ---------- Date helpers ---------- */
+const DAY = 86400000;
+function today0() { const d = new Date(); d.setHours(0,0,0,0); return d; }
+function parseDate(s) { const d = new Date(s + 'T00:00:00'); return d; }
+function daysBetween(a, b) { return Math.round((a - b) / DAY); }
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = parseDate(s);
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function lastInteraction(c) {
+  if (!c.interactions || !c.interactions.length) return null;
+  return c.interactions.reduce((a, b) => (a.date > b.date ? a : b));
+}
+function cadenceOf(c) { return c.cadence || TIERS[c.tier]?.cadence || 30; }
+
+// returns {status:'overdue'|'duesoon'|'ok'|'new', daysOverdue, dueInDays, lastDate}
+function reminderInfo(c) {
+  const cad = cadenceOf(c);
+  const last = lastInteraction(c);
+  if (!last) return { status: 'new', daysOverdue: Infinity, dueInDays: -9999, lastDate: null, cad };
+  const lastD = parseDate(last.date);
+  const dueD = new Date(lastD); dueD.setDate(dueD.getDate() + cad);
+  const diff = daysBetween(today0(), dueD); // positive => overdue by diff days
+  if (diff > 0) return { status: 'overdue', daysOverdue: diff, dueInDays: -diff, lastDate: last.date, cad };
+  if (diff >= -3) return { status: 'duesoon', daysOverdue: 0, dueInDays: -diff, lastDate: last.date, cad };
+  return { status: 'ok', daysOverdue: 0, dueInDays: -diff, lastDate: last.date, cad };
+}
+function nextBirthday(c) {
+  if (!c.bday) return null;
+  const b = parseDate(c.bday);
+  const t = today0();
+  let next = new Date(t.getFullYear(), b.getMonth(), b.getDate());
+  if (next < t) next.setFullYear(t.getFullYear() + 1);
+  return { date: next, inDays: daysBetween(next, t) };
+}
+
+/* ---------- Rendering ---------- */
+const main = document.getElementById('main');
+function initials(name) { return name.trim().split(/\s+/).slice(0,2).map(w => w[0].toUpperCase()).join(''); }
+function avatarColor(name) { let h = 0; for (const ch of name) h = ch.charCodeAt(0) + ((h << 5) - h); return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]; }
+function esc(s) { return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function render() {
+  updateBadge();
+  if (currentView === 'dashboard') renderDashboard();
+  else if (currentView === 'reminders') renderReminders();
+  else renderPeople();
+}
+
+function updateBadge() {
+  const n = state.contacts.filter(c => ['overdue','new'].includes(reminderInfo(c).status)).length;
+  const b = document.getElementById('navBadge');
+  if (n > 0) { b.style.display = 'inline-block'; b.textContent = n; } else b.style.display = 'none';
+}
+
+function renderDashboard() {
+  const cs = state.contacts;
+  const infos = cs.map(reminderInfo);
+  const overdue = infos.filter(i => i.status === 'overdue' || i.status === 'new').length;
+  const soon = infos.filter(i => i.status === 'duesoon').length;
+  const totalInter = cs.reduce((n, c) => n + (c.interactions?.length || 0), 0);
+  const bdays = cs.map(c => ({ c, b: nextBirthday(c) })).filter(x => x.b && x.b.inDays <= 30).sort((a,b)=>a.b.inDays-b.b.inDays);
+
+  const attention = cs.map(c => ({ c, i: reminderInfo(c) }))
+    .filter(x => ['overdue','new','duesoon'].includes(x.i.status))
+    .sort((a,b) => b.i.daysOverdue - a.i.daysOverdue).slice(0, 5);
+
+  main.innerHTML = `
+    <div class="page-head">
+      <div>
+        <h2>Good to see you 👋</h2>
+        <p class="sub">${cs.length} people in your circle · staying connected on purpose.</p>
+      </div>
+      <button class="btn" onclick="openContactModal()">＋ Add person</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n">${cs.length}</div><div class="l">People tracked</div></div>
+      <div class="stat"><div class="n ${overdue?'bad':'good'}">${overdue}</div><div class="l">Need reaching out</div></div>
+      <div class="stat"><div class="n ${soon?'warn':''}">${soon}</div><div class="l">Due soon</div></div>
+      <div class="stat"><div class="n">${totalInter}</div><div class="l">Interactions logged</div></div>
+    </div>
+
+    <div class="section-title">Reach out next</div>
+    ${attention.length ? `<div class="rem-list">${attention.map(x => remRow(x.c, x.i)).join('')}</div>`
+      : `<div class="empty" style="padding:34px"><div class="big">✅</div>You're all caught up. Nicely done.</div>`}
+
+    ${bdays.length ? `
+      <div class="section-title" style="margin-top:30px">🎂 Upcoming birthdays</div>
+      <div class="rem-list">${bdays.map(x => `
+        <div class="rem">
+          ${avatarEl(x.c)}
+          <div class="meta"><div class="nm">${esc(x.c.name)}</div><div class="dt">${fmtDate(x.b.date.toISOString().slice(0,10))}</div></div>
+          <div class="when" style="color:var(--amber)">${x.b.inDays === 0 ? 'Today! 🎉' : 'in ' + x.b.inDays + ' day' + (x.b.inDays>1?'s':'')}</div>
+        </div>`).join('')}</div>` : ''}
+  `;
+}
+
+function renderReminders() {
+  const list = state.contacts.map(c => ({ c, i: reminderInfo(c) }))
+    .sort((a,b) => b.i.daysOverdue - a.i.daysOverdue);
+  const overdue = list.filter(x => x.i.status === 'overdue' || x.i.status === 'new');
+  const soon = list.filter(x => x.i.status === 'duesoon');
+  const ok = list.filter(x => x.i.status === 'ok');
+
+  main.innerHTML = `
+    <div class="page-head">
+      <div><h2>Reminders</h2><p class="sub">Based on how often you want to keep in touch with each person.</p></div>
+      <button class="btn" onclick="openContactModal()">＋ Add person</button>
+    </div>
+    ${overdue.length ? `<div class="section-title">🔴 Overdue (${overdue.length})</div>
+      <div class="rem-list">${overdue.map(x => remRow(x.c, x.i)).join('')}</div>` : ''}
+    ${soon.length ? `<div class="section-title" style="margin-top:26px">🟡 Due soon (${soon.length})</div>
+      <div class="rem-list">${soon.map(x => remRow(x.c, x.i)).join('')}</div>` : ''}
+    ${ok.length ? `<div class="section-title" style="margin-top:26px">🟢 On track (${ok.length})</div>
+      <div class="rem-list">${ok.map(x => remRow(x.c, x.i)).join('')}</div>` : ''}
+    ${!state.contacts.length ? `<div class="empty"><div class="big">🔔</div>No people yet — add someone to start getting reminders.</div>` : ''}
+  `;
+}
+
+function remRow(c, i) {
+  const cls = i.status === 'overdue' || i.status === 'new' ? 'overdue' : (i.status === 'duesoon' ? 'duesoon' : '');
+  let when, color;
+  if (i.status === 'new') { when = 'No contact yet'; color = 'var(--red)'; }
+  else if (i.status === 'overdue') { when = `${i.daysOverdue} day${i.daysOverdue>1?'s':''} overdue`; color = 'var(--red)'; }
+  else if (i.status === 'duesoon') { when = i.dueInDays === 0 ? 'Due today' : `Due in ${i.dueInDays}d`; color = 'var(--amber)'; }
+  else { when = `Next in ${i.dueInDays}d`; color = 'var(--muted)'; }
+  return `
+    <div class="rem ${cls}">
+      ${avatarEl(c)}
+      <div class="meta" style="cursor:pointer" onclick="openDetail('${c.id}')">
+        <div class="nm">${esc(c.name)}</div>
+        <div class="dt">${esc(c.rel || TIERS[c.tier].label)} · last ${i.lastDate ? fmtDate(i.lastDate) : 'never'}</div>
+      </div>
+      <div class="when" style="color:${color}">${when}</div>
+      <button class="btn sm" onclick="openLog('${c.id}')">Log</button>
+    </div>`;
+}
+
+function avatarEl(c) {
+  return `<div class="avatar" style="background:${avatarColor(c.name)}">${initials(c.name)}</div>`;
+}
+
+function renderPeople() {
+  let list = state.contacts.slice();
+  if (peopleFilter.q) {
+    const q = peopleFilter.q.toLowerCase();
+    list = list.filter(c => (c.name + ' ' + (c.rel||'') + ' ' + (c.notes||'')).toLowerCase().includes(q));
+  }
+  if (peopleFilter.tier !== 'all') list = list.filter(c => c.tier === peopleFilter.tier);
+  list.sort((a, b) => {
+    if (peopleFilter.sort === 'name') return a.name.localeCompare(b.name);
+    if (peopleFilter.sort === 'tier') return Object.keys(TIERS).indexOf(a.tier) - Object.keys(TIERS).indexOf(b.tier);
+    return reminderInfo(b).daysOverdue - reminderInfo(a).daysOverdue; // due
+  });
+
+  main.innerHTML = `
+    <div class="page-head">
+      <div><h2>People</h2><p class="sub">${state.contacts.length} in your circle</p></div>
+      <button class="btn" onclick="openContactModal()">＋ Add person</button>
+    </div>
+    <div class="toolbar">
+      <input id="searchInput" placeholder="🔍 Search name, notes…" value="${esc(peopleFilter.q)}">
+      <select id="tierFilter">
+        <option value="all">All circles</option>
+        ${Object.entries(TIERS).map(([k,v]) => `<option value="${k}" ${peopleFilter.tier===k?'selected':''}>${v.label}</option>`).join('')}
+      </select>
+      <select id="sortSel">
+        <option value="due" ${peopleFilter.sort==='due'?'selected':''}>Sort: Needs attention</option>
+        <option value="name" ${peopleFilter.sort==='name'?'selected':''}>Sort: Name</option>
+        <option value="tier" ${peopleFilter.sort==='tier'?'selected':''}>Sort: Circle</option>
+      </select>
+    </div>
+    ${list.length ? `<div class="cards">${list.map(personCard).join('')}</div>`
+      : `<div class="empty"><div class="big">👥</div>No matches. ${state.contacts.length? 'Try a different filter.' : 'Add your first person!'}</div>`}
+  `;
+
+  document.getElementById('searchInput').addEventListener('input', e => { peopleFilter.q = e.target.value; renderPeople(); document.getElementById('searchInput').focus(); const el=document.getElementById('searchInput'); el.setSelectionRange(el.value.length,el.value.length); });
+  document.getElementById('tierFilter').addEventListener('change', e => { peopleFilter.tier = e.target.value; renderPeople(); });
+  document.getElementById('sortSel').addEventListener('change', e => { peopleFilter.sort = e.target.value; renderPeople(); });
+}
+
+function personCard(c) {
+  const i = reminderInfo(c);
+  const t = TIERS[c.tier];
+  let statusLabel, statusColor;
+  if (i.status === 'new') { statusLabel = 'Never contacted'; statusColor = 'var(--red)'; }
+  else if (i.status === 'overdue') { statusLabel = `${i.daysOverdue}d overdue`; statusColor = 'var(--red)'; }
+  else if (i.status === 'duesoon') { statusLabel = i.dueInDays===0?'Due today':`Due in ${i.dueInDays}d`; statusColor = 'var(--amber)'; }
+  else { statusLabel = 'On track'; statusColor = 'var(--green)'; }
+  return `
+    <div class="card">
+      <div class="top">
+        ${avatarEl(c)}
+        <div style="flex:1;min-width:0">
+          <div class="name">${esc(c.name)}</div>
+          <div class="rel">${esc(c.rel || '')}</div>
+        </div>
+        <span class="tier-chip" style="background:${t.color}22;color:${t.color}">${t.label}</span>
+      </div>
+      <div class="status-row">
+        <span class="status-dot"><span class="dot" style="background:${statusColor}"></span> ${statusLabel}</span>
+        <span style="color:var(--muted)">${i.lastDate ? 'last ' + fmtDate(i.lastDate) : ''}</span>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="openLog('${c.id}')">＋ Log</button>
+        <button onclick="openDetail('${c.id}')">Details</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- Detail ---------- */
+function openDetail(id) {
+  const c = state.contacts.find(x => x.id === id);
+  if (!c) return;
+  const i = reminderInfo(c);
+  const t = TIERS[c.tier];
+  const bday = nextBirthday(c);
+  const inter = (c.interactions || []).slice().sort((a,b) => b.date.localeCompare(a.date));
+  const typeIcon = { 'Call':'📞','Text / DM':'💬','In person':'🤝','Video call':'📹','Email':'✉️','Social media':'📱','Gift / card':'🎁' };
+
+  document.getElementById('d_title').textContent = c.name;
+  document.getElementById('detailBody').innerHTML = `
+    <div class="top" style="display:flex;gap:14px;align-items:center;margin-bottom:4px">
+      ${avatarEl(c)}
+      <div>
+        <div style="font-weight:700;font-size:17px">${esc(c.name)}</div>
+        <div style="color:var(--muted);font-size:13px">${esc(c.rel||'')} · <span style="color:${t.color}">${t.label}</span></div>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="cell"><div class="k">Keep in touch every</div><div class="v">${cadenceOf(c)} days</div></div>
+      <div class="cell"><div class="k">Status</div><div class="v">${i.status==='new'?'Never contacted':i.status==='overdue'?i.daysOverdue+'d overdue':i.status==='duesoon'?'Due soon':'On track'}</div></div>
+      <div class="cell"><div class="k">Contact</div><div class="v">${esc(c.contact||'—')}</div></div>
+      <div class="cell"><div class="k">Birthday</div><div class="v">${c.bday?fmtDate(c.bday)+(bday?` · in ${bday.inDays}d`:''):'—'}</div></div>
+    </div>
+    ${c.notes ? `<div style="background:var(--surface-2);border-radius:10px;padding:12px 14px;margin-bottom:16px"><div class="k" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Notes</div><div style="font-size:14px">${esc(c.notes)}</div></div>` : ''}
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn sm" onclick="openLog('${c.id}')">＋ Log interaction</button>
+      <button class="btn sm ghost" onclick="openContactModal('${c.id}')">Edit</button>
+      <button class="btn sm ghost" style="margin-left:auto;color:var(--red)" onclick="deleteContact('${c.id}')">Delete</button>
+    </div>
+    <div class="section-title" style="margin:0 0 6px">History (${inter.length})</div>
+    ${inter.length ? `<div class="timeline">${inter.map(iv => `
+      <div class="tl-item">
+        <div class="tl-ic">${typeIcon[iv.type]||'•'}</div>
+        <div class="tl-body" style="flex:1">
+          <div class="tl-type">${esc(iv.type)}</div>
+          ${iv.note ? `<div class="tl-note">${esc(iv.note)}</div>` : ''}
+          <div class="tl-date">${fmtDate(iv.date)}</div>
+        </div>
+        <button class="del-link" onclick="deleteInteraction('${c.id}','${iv.id}')">delete</button>
+      </div>`).join('')}</div>` : `<div style="color:var(--muted);font-size:13px;padding:8px 0">No interactions logged yet.</div>`}
+  `;
+  openModal('detailOverlay');
+}
+
+/* ---------- Contact CRUD ---------- */
+function openContactModal(id) {
+  const isEdit = !!id;
+  document.getElementById('contactModalTitle').textContent = isEdit ? 'Edit person' : 'Add person';
+  const c = isEdit ? state.contacts.find(x => x.id === id) : null;
+  document.getElementById('c_id').value = id || '';
+  document.getElementById('c_name').value = c?.name || '';
+  document.getElementById('c_rel').value = c?.rel || '';
+  document.getElementById('c_tier').value = c?.tier || 'close';
+  document.getElementById('c_cadence').value = c?.cadence || '';
+  document.getElementById('c_bday').value = c?.bday || '';
+  document.getElementById('c_contact').value = c?.contact || '';
+  document.getElementById('c_notes').value = c?.notes || '';
+  closeModal('detailOverlay');
+  openModal('contactOverlay');
+  setTimeout(() => document.getElementById('c_name').focus(), 50);
+}
+
+document.getElementById('saveContactBtn').onclick = () => {
+  const name = document.getElementById('c_name').value.trim();
+  if (!name) { toast('Please enter a name'); return; }
+  const id = document.getElementById('c_id').value;
+  const tier = document.getElementById('c_tier').value;
+  const cadRaw = document.getElementById('c_cadence').value;
+  const data = {
+    name,
+    rel: document.getElementById('c_rel').value.trim(),
+    tier,
+    cadence: cadRaw ? parseInt(cadRaw) : TIERS[tier].cadence,
+    bday: document.getElementById('c_bday').value,
+    contact: document.getElementById('c_contact').value.trim(),
+    notes: document.getElementById('c_notes').value.trim(),
+  };
+  if (id) {
+    const c = state.contacts.find(x => x.id === id);
+    Object.assign(c, data);
+    toast('Updated ' + name);
+  } else {
+    state.contacts.push({ id: uid(), ...data, interactions: [] });
+    toast('Added ' + name);
+  }
+  save(); closeModal('contactOverlay'); render();
+};
+
+function deleteContact(id) {
+  const c = state.contacts.find(x => x.id === id);
+  if (!confirm(`Delete ${c.name} and their history? This can't be undone.`)) return;
+  state.contacts = state.contacts.filter(x => x.id !== id);
+  save(); closeModal('detailOverlay'); render(); toast('Deleted ' + c.name);
+}
+
+/* ---------- Interaction logging ---------- */
+function openLog(id) {
+  const c = state.contacts.find(x => x.id === id);
+  document.getElementById('l_contactId').value = id;
+  document.getElementById('l_withName').textContent = 'With ' + c.name;
+  document.getElementById('l_type').value = 'Call';
+  document.getElementById('l_date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('l_note').value = '';
+  closeModal('detailOverlay');
+  openModal('logOverlay');
+  setTimeout(() => document.getElementById('l_note').focus(), 50);
+}
+
+document.getElementById('saveLogBtn').onclick = () => {
+  const id = document.getElementById('l_contactId').value;
+  const c = state.contacts.find(x => x.id === id);
+  const date = document.getElementById('l_date').value || new Date().toISOString().slice(0,10);
+  c.interactions = c.interactions || [];
+  c.interactions.push({
+    id: uid(),
+    type: document.getElementById('l_type').value,
+    date,
+    note: document.getElementById('l_note').value.trim(),
+  });
+  save(); closeModal('logOverlay'); render(); toast('Logged interaction with ' + c.name + ' 🎉');
+};
+
+function deleteInteraction(cid, iid) {
+  const c = state.contacts.find(x => x.id === cid);
+  c.interactions = c.interactions.filter(x => x.id !== iid);
+  save(); openDetail(cid); render();
+}
+
+/* ---------- Modal + nav plumbing ---------- */
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.overlay.show').forEach(o => o.classList.remove('show')); });
+
+document.getElementById('nav').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-view]');
+  if (!btn) return;
+  currentView = btn.dataset.view;
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('active', b === btn));
+  render();
+});
+
+/* ---------- Export / import ---------- */
+document.getElementById('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'circle-backup.json';
+  a.click();
+  toast('Exported your data');
+};
+document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
+document.getElementById('importFile').onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data.contacts) throw new Error('bad');
+      state = data; save(); render(); toast('Imported ' + data.contacts.length + ' people');
+    } catch { toast('Could not read that file'); }
+  };
+  reader.readAsText(file);
+};
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+render();
+</script>
+</body>
+</html>
