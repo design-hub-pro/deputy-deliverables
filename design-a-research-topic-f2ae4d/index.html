@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3 LLM Research Topics for a Strong Middle Schooler</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --line:#2a3341;
+    --ink:#e6edf3; --muted:#9aa7b4; --accent:#5ea9ff; --accent2:#7ee0b8;
+    --warn:#ffd580; --chip:#20293a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:linear-gradient(180deg,#0b0f16,#0d1117 40%);
+    color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  .wrap{max-width:960px; margin:0 auto; padding:48px 22px 80px}
+  header.hero{text-align:center; margin-bottom:40px}
+  .kicker{color:var(--accent); font-weight:600; letter-spacing:.14em; text-transform:uppercase; font-size:12px}
+  h1{font-size:34px; line-height:1.2; margin:12px 0 10px}
+  .sub{color:var(--muted); max-width:680px; margin:0 auto; font-size:17px}
+  .profile{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:20px}
+  .chip{background:var(--chip); border:1px solid var(--line); color:var(--ink);
+    padding:6px 12px; border-radius:999px; font-size:13px}
+  .principles{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px 24px; margin:34px 0}
+  .principles h2{margin:0 0 12px; font-size:15px; color:var(--accent2); letter-spacing:.04em; text-transform:uppercase}
+  .principles ul{margin:0; padding-left:20px; color:var(--muted)}
+  .principles li{margin:6px 0}
+  .principles b{color:var(--ink)}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:26px 28px; margin:22px 0;
+    box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .card .num{display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:10px;
+    background:linear-gradient(135deg,var(--accent),#3f7fd6); color:#04121f; font-weight:800; font-size:17px; margin-right:12px}
+  .card h3{display:flex; align-items:center; font-size:22px; margin:0 0 6px}
+  .pitch{color:var(--accent2); font-style:italic; margin:2px 0 16px; font-size:16px}
+  .fit{background:var(--panel2); border-left:3px solid var(--accent); padding:10px 16px; border-radius:8px; color:var(--muted); font-size:14.5px; margin:14px 0}
+  .fit b{color:var(--ink)}
+  h4{margin:18px 0 6px; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--warn)}
+  .card ul{margin:6px 0; padding-left:20px}
+  .card li{margin:5px 0}
+  .card p{margin:6px 0}
+  .tags{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px}
+  .tag{font-size:12px; background:var(--chip); border:1px solid var(--line); color:var(--muted); padding:4px 10px; border-radius:6px}
+  .tag.build{color:var(--accent)}
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14.5px}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line)}
+  th{color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.05em}
+  .rec{background:linear-gradient(135deg,#12261d,#132a3a); border:1px solid #24506e; border-radius:16px; padding:22px 26px; margin:26px 0}
+  .rec h3{margin:0 0 8px; color:var(--accent2)}
+  .plan{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:24px 28px; margin:22px 0}
+  .plan ol{margin:8px 0; padding-left:22px}
+  .plan li{margin:8px 0}
+  .plan li b{color:var(--accent)}
+  footer{color:var(--muted); font-size:13px; text-align:center; margin-top:40px; border-top:1px solid var(--line); padding-top:20px}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="kicker">Research Topic Design</div>
+    <h1>3 LLM Research Topics for a Strong Middle Schooler</h1>
+    <p class="sub">Each topic asks a measurable question, runs on a laptop with a hosted LLM API (a few dollars, no GPUs), and plays to this student's specific strengths.</p>
+    <div class="profile">
+      <span class="chip">🏆 Strong in USACO</span>
+      <span class="chip">🌐 Built a web app</span>
+      <span class="chip">⏱️ ~6 weekends</span>
+      <span class="chip">💵 A few dollars of API</span>
+    </div>
+  </header>
+
+  <section class="principles">
+    <h2>What makes these good & feasible</h2>
+    <ul>
+      <li><b>Feasible for a middle schooler:</b> no model training, no big datasets — just a few hundred API calls to Claude / GPT / Gemini, or a free local model via Ollama.</li>
+      <li><b>Real research, not a demo:</b> each one produces a number, a chart, and a conclusion someone could argue with. That's the line between "research" and "I built a chatbot."</li>
+      <li><b>Plays to their strengths:</b> USACO skill → writing an automated grader &amp; reasoning about algorithms; web-app skill → shipping an interactive results dashboard that makes any project look finished.</li>
+    </ul>
+  </section>
+
+  <!-- TOPIC 1 -->
+  <article class="card">
+    <h3><span class="num">1</span>Can LLMs Solve USACO?</h3>
+    <p class="pitch">Measure how good today's LLMs really are at competitive programming — and carefully categorize <em>why</em> they fail.</p>
+    <div class="fit"><b>Why it fits:</b> The student already knows USACO deeply. Most researchers benchmarking code LLMs can't tell a "wrong algorithm" mistake from an "off-by-one" mistake. This student can — that domain expertise is the whole edge.</div>
+
+    <h4>Research questions</h4>
+    <ul>
+      <li>What fraction of Bronze / Silver / Gold problems can an LLM solve correctly?</li>
+      <li><em>Where does it break?</em> Misreads the problem, wrong algorithm choice, right algorithm but bad edge cases, or TLE from bad complexity?</li>
+      <li>Does the intended solution's complexity predict failure better than problem length?</li>
+    </ul>
+
+    <h4>What to build</h4>
+    <ul>
+      <li>A dataset of ~40–60 public USACO problems with official test data.</li>
+      <li>An <b>automated judge harness</b> (the USACO-flavored part): LLM → extract code → compile → run against official tests → record which tests failed.</li>
+      <li>A hand-built <b>failure taxonomy</b> — the human-labeled analysis is the real scientific contribution.</li>
+      <li>A web dashboard: accuracy by division + a heatmap of error-type vs. difficulty, with clickable examples.</li>
+    </ul>
+
+    <h4>Experiments</h4>
+    <ul>
+      <li>Baseline accuracy per division.</li>
+      <li>Does chain-of-thought ("explain the algorithm first, then code") help?</li>
+      <li>Does giving the algorithm tag ("this is DP") close the gap — separating "can't pick the algorithm" from "can't implement it"?</li>
+    </ul>
+
+    <div class="tags">
+      <span class="tag build">builds: judge harness</span><span class="tag build">builds: dashboard</span>
+      <span class="tag">skill: USACO</span><span class="tag">stretch: self-repair from failing test</span>
+    </div>
+  </article>
+
+  <!-- TOPIC 2 -->
+  <article class="card">
+    <h3><span class="num">2</span>Does "Self-Correction" Actually Help?</h3>
+    <p class="pitch">LLMs are often told to "check your work." Does that make them more <em>correct</em> — or just more <em>confident</em>?</p>
+    <div class="fit"><b>Why it fits:</b> A clean, controlled experiment — exactly the rigorous, don't-fool-yourself thinking a USACO student is good at. Minimal building, maximum scientific care.</div>
+
+    <h4>Research questions</h4>
+    <ul>
+      <li>On checkable tasks (math word problems, logic puzzles), does asking the model to review &amp; revise improve accuracy?</li>
+      <li>Does self-correction ever turn a <em>right</em> answer <em>wrong</em>? What's the net effect?</li>
+      <li>Does the model actually <em>know</em> when it's wrong (is its confidence calibrated)?</li>
+    </ul>
+
+    <h4>What to build</h4>
+    <ul>
+      <li>One dataset with auto-checkable answers (e.g. GSM8K math, or logic puzzles the student writes a checker for — very USACO).</li>
+      <li>Three conditions: <b>Direct</b> (answer once) · <b>Self-critique</b> (answer, then revise) · <b>Self-consistency</b> (sample 5×, majority vote).</li>
+      <li>An automated correctness checker + a dashboard showing right→wrong vs. wrong→right transitions.</li>
+    </ul>
+
+    <h4>Expected finding</h4>
+    <p>An honest number: "self-correction helps +N% on task A but <em>hurts</em> on task B, and majority-voting beats self-critique." Self-correction often helps less than people assume — which is genuinely interesting.</p>
+
+    <div class="tags">
+      <span class="tag build">builds: eval pipeline</span><span class="tag build">builds: dashboard</span>
+      <span class="tag">skill: experimental rigor</span><span class="tag">stretch: give it a calculator/tool</span>
+    </div>
+  </article>
+
+  <!-- TOPIC 3 -->
+  <article class="card">
+    <h3><span class="num">3</span>Small-Scale RAG: Does Retrieval Cut Hallucination?</h3>
+    <p class="pitch">Build a "closed-book vs. open-book" LLM over a chosen document set, and measure how much giving it the source reduces made-up answers.</p>
+    <div class="fit"><b>Why it fits:</b> This leans on the <b>web-app</b> skill. RAG powers most real LLM products, so building one is resume-worthy — and the fixed question set keeps it honest as research, not just a demo.</div>
+
+    <h4>Research questions</h4>
+    <ul>
+      <li>For questions about one corpus (a game's rules, a Wikipedia subset, Pokédex data, a school handbook), how often does the LLM hallucinate <em>with</em> vs. <em>without</em> retrieval?</li>
+      <li>How does the number of retrieved chunks (k = 1, 3, 5, 10) affect accuracy? Is there a point where more context <em>hurts</em>?</li>
+      <li>Does chunk size matter?</li>
+    </ul>
+
+    <h4>What to build</h4>
+    <ul>
+      <li>A self-contained corpus + ~50 questions with known correct answers (ground truth).</li>
+      <li>A simple RAG pipeline: chunk → embed → retrieve top-k → answer using only those chunks.</li>
+      <li>A <b>web app</b> where you type a question and see both the retrieved passages and the answer — great for demos and debugging.</li>
+      <li>An eval script scoring answers vs. ground truth across every k setting.</li>
+    </ul>
+
+    <h4>Expected finding</h4>
+    <p>"Without retrieval the model is right X% and confidently wrong Y%; with k=3 it's right Z%; beyond k=5 accuracy plateaus and irrelevant chunks start causing errors."</p>
+
+    <div class="tags">
+      <span class="tag build">builds: RAG web app</span><span class="tag build">builds: eval script</span>
+      <span class="tag">skill: web dev</span><span class="tag">stretch: embeddings vs. keyword search</span>
+    </div>
+  </article>
+
+  <!-- CHOOSE -->
+  <section class="plan">
+    <h4 style="margin-top:0">How to choose</h4>
+    <table>
+      <tr><th>If the student most enjoys…</th><th>Pick</th></tr>
+      <tr><td>Algorithms &amp; competitive programming</td><td><b>Topic 1</b> — uses the USACO edge most directly</td></tr>
+      <tr><td>Clean experiments / "is this claim true?"</td><td><b>Topic 2</b> — most rigorous, least building</td></tr>
+      <tr><td>Building things people can click on</td><td><b>Topic 3</b> — uses the web-app skill most</td></tr>
+    </table>
+  </section>
+
+  <section class="rec">
+    <h3>⭐ Recommended: Topic 1</h3>
+    <p>It's the most <b>differentiated</b>. Very few people can do a careful failure analysis of LLMs on USACO problems, because it needs exactly this student's rare combo — competitive-programming expertise + coding a grader + building a dashboard. It's the topic where this specific student has an <em>unfair advantage</em>.</p>
+  </section>
+
+  <!-- PLAN -->
+  <section class="plan">
+    <h4 style="margin-top:0">A realistic 6-weekend plan (using Topic 1)</h4>
+    <ol>
+      <li><b>Weekend 1</b> — Collect 15–20 problems + test data; get one LLM→code→compile→judge loop working end to end.</li>
+      <li><b>Weekend 2</b> — Scale to 40–60 problems; automate the batch; store results in JSON/CSV.</li>
+      <li><b>Weekend 3</b> — Hand-label failure types on the first batch; refine the taxonomy.</li>
+      <li><b>Weekend 4</b> — Run the prompting experiments (chain-of-thought, algorithm hints).</li>
+      <li><b>Weekend 5</b> — Build the results dashboard (charts + clickable examples).</li>
+      <li><b>Weekend 6</b> — Write the 4–6 page report; add one stretch goal.</li>
+    </ol>
+    <h4>Keeping it "research"</h4>
+    <ul>
+      <li>Fix your dataset &amp; questions <b>before</b> looking at results — no cherry-picking.</li>
+      <li>Always report a <b>baseline</b> to compare against.</li>
+      <li>Report what <b>didn't</b> work — negative results are real results.</li>
+      <li>Keep every prompt &amp; script in a repo so it's <b>reproducible</b>.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Designed for a middle school student strong in USACO with web-app experience · All three topics are laptop-scale, API-only, and produce a paper + interactive dashboard.
+  </footer>
+
+</div>
+</body>
+</html>
