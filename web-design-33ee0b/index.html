@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Land Memory Lab · 土地记忆实验室 — How Landscapes Carry the Traces of Time</title>
+<meta name="description" content="Land Memory Lab is a dynamic GIS research platform exploring how landscapes carry the traces of time through water, vegetation, landforms, and human activity. Case Study 01: Beneath Aurora." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0b0d12;
+  --bg2:#11141c;
+  --card:#161a24;
+  --line:rgba(255,255,255,0.08);
+  --line-strong:rgba(255,255,255,0.16);
+  --ink:#eceae5;
+  --dim:#a3abb9;
+  --dimmer:#7b8390;
+  --accent:#3da7ff;      /* water */
+  --accent-soft:#80e0d0; /* aqua */
+  --accent-deep:#1d6fb8;
+  --gold:#e9b949;
+  --moss:#6fbf73;        /* living memory */
+  --clay:#e0834f;        /* human imprint */
+  --radius:14px;
+  --shadow:0 18px 48px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:78px}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{font-family:'Fraunces',Georgia,serif; font-weight:700; line-height:1.12; margin:0}
+a{color:inherit}
+img{max-width:100%; display:block}
+.container{max-width:1180px; margin:0 auto; padding:0 28px}
+section{padding:104px 0; position:relative}
+section.alt{background:var(--bg2)}
+.eyebrow{
+  font-size:12px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--accent-soft); font-weight:700; margin-bottom:14px;
+}
+.section-title{font-size:clamp(30px,4.2vw,50px); letter-spacing:-.02em; margin-bottom:8px}
+.zh{color:var(--dim); font-weight:500}
+h2 .zh, h3 .zh{display:block; font-size:.52em; letter-spacing:.02em; margin-top:10px; font-family:'Inter',sans-serif; font-weight:600; color:var(--dimmer)}
+.lead{color:var(--dim); font-size:17px; max-width:74ch; margin:18px 0 0}
+.lead-zh{color:var(--dimmer); font-size:15.5px; max-width:74ch; margin:10px 0 0}
+.center{text-align:center}
+.center .lead,.center .lead-zh{margin-left:auto; margin-right:auto}
+
+/* ---------- NAV ---------- */
+nav{
+  position:fixed; inset:0 0 auto 0; z-index:100; height:66px;
+  background:rgba(11,13,18,.78); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line); display:flex; align-items:center;
+}
+nav .container{display:flex; align-items:center; justify-content:space-between; gap:20px; width:100%}
+.brand{display:flex; align-items:center; gap:11px; font-weight:800; letter-spacing:-.01em; font-size:15px; text-decoration:none}
+.dot{
+  width:11px; height:11px; border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,var(--accent-soft),var(--accent));
+  box-shadow:0 0 0 4px rgba(61,167,255,.14), 0 0 18px rgba(128,224,208,.75);
+  animation:pulse 3.4s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(61,167,255,.12),0 0 14px rgba(128,224,208,.55)}50%{box-shadow:0 0 0 7px rgba(61,167,255,.05),0 0 26px rgba(128,224,208,.9)}}
+.brand small{display:block; font-weight:500; font-size:10.5px; letter-spacing:.16em; color:var(--dimmer); text-transform:uppercase}
+.navlinks{display:flex; gap:22px; align-items:center}
+.navlinks a{
+  text-decoration:none; font-size:12px; font-weight:600; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--dim); transition:color .2s;
+}
+.navlinks a:hover{color:var(--accent-soft)}
+.langbtn{
+  border:1px solid var(--line-strong); background:transparent; color:var(--dim);
+  font-family:inherit; font-size:11px; font-weight:700; letter-spacing:.08em;
+  padding:6px 12px; border-radius:99px; cursor:pointer; transition:.2s; white-space:nowrap;
+}
+.langbtn:hover{border-color:var(--accent); color:var(--accent-soft)}
+@media(max-width:1080px){.navlinks a{display:none}}
+
+/* ---------- HERO ---------- */
+.hero{
+  min-height:100vh; display:flex; align-items:flex-end; position:relative;
+  padding:130px 0 54px; overflow:hidden;
+}
+.hero-bg{position:absolute; inset:0; z-index:0}
+.hero-bg img{width:100%; height:100%; object-fit:cover; opacity:.62}
+.hero-bg::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(180deg,rgba(11,13,18,.86) 0%,rgba(11,13,18,.42) 34%,rgba(11,13,18,.9) 78%,var(--bg) 100%);
+}
+.hero .container{position:relative; z-index:2; width:100%}
+.pill{
+  display:inline-flex; align-items:center; gap:9px; padding:7px 16px; border-radius:99px;
+  border:1px solid rgba(128,224,208,.34); background:rgba(61,167,255,.09);
+  font-size:11.5px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--accent-soft);
+  margin-bottom:26px;
+}
+.hero h1{font-size:clamp(38px,6.4vw,78px); letter-spacing:-.035em; max-width:17ch}
+.grad{
+  background:linear-gradient(105deg,var(--accent-soft) 0%,var(--accent) 46%,var(--gold) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.hero-zh{font-size:clamp(16px,2vw,21px); color:var(--dim); font-weight:600; margin-top:16px; letter-spacing:.02em}
+.hero p.sum{color:var(--dim); font-size:17px; max-width:64ch; margin-top:22px}
+.ctas{display:flex; gap:14px; flex-wrap:wrap; margin-top:34px}
+.btn{
+  display:inline-flex; align-items:center; gap:9px; padding:14px 26px; border-radius:99px;
+  font-weight:700; font-size:14px; text-decoration:none; transition:.22s; border:1px solid transparent;
+}
+.btn-p{background:linear-gradient(100deg,var(--accent),var(--accent-soft)); color:#06212f; box-shadow:0 10px 30px rgba(61,167,255,.3)}
+.btn-p:hover{transform:translateY(-2px); box-shadow:0 16px 40px rgba(61,167,255,.42)}
+.btn-g{border-color:var(--line-strong); color:var(--ink)}
+.btn-g:hover{border-color:var(--accent-soft); color:var(--accent-soft)}
+.stats{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:1px; margin-top:56px;
+  background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+}
+.stat{background:rgba(11,13,18,.82); padding:22px 20px}
+.stat b{display:block; font-family:'Fraunces',serif; font-size:clamp(24px,3vw,34px); color:var(--accent-soft); letter-spacing:-.02em}
+.stat span{display:block; font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--dimmer); margin-top:6px; font-weight:600}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- GENERIC BLOCKS ---------- */
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:26px; box-shadow:var(--shadow);
+}
+.grid{display:grid; gap:20px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.split{display:grid; grid-template-columns:1.05fr .95fr; gap:44px; align-items:center}
+.split.rev{grid-template-columns:.95fr 1.05fr}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:820px){.g2,.g3,.g4,.split,.split.rev{grid-template-columns:1fr; gap:22px}}
+.figure{position:relative; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow)}
+.figure img{width:100%; aspect-ratio:16/9; object-fit:cover}
+.figure figcaption{
+  position:absolute; left:14px; bottom:14px; padding:7px 13px; border-radius:8px;
+  background:rgba(8,10,14,.82); backdrop-filter:blur(6px); border:1px solid var(--line);
+  font-size:11.5px; letter-spacing:.05em; color:var(--dim); max-width:calc(100% - 28px);
+}
+blockquote{
+  margin:44px 0; padding:28px 34px; border-left:3px solid var(--accent);
+  background:linear-gradient(90deg,rgba(61,167,255,.075),transparent 72%); border-radius:0 12px 12px 0;
+}
+blockquote p{margin:0; font-family:'Fraunces',serif; font-style:italic; font-size:clamp(19px,2.4vw,26px); line-height:1.42; letter-spacing:-.01em}
+blockquote .zh{display:block; font-family:'Inter',sans-serif; font-style:normal; font-size:15px; margin-top:14px; color:var(--dimmer)}
+.tag{
+  display:inline-block; padding:4px 11px; border-radius:99px; font-size:10.5px; font-weight:700;
+  letter-spacing:.13em; text-transform:uppercase; border:1px solid var(--line-strong); color:var(--dim);
+}
+.tag.water{border-color:rgba(61,167,255,.42); color:var(--accent); background:rgba(61,167,255,.09)}
+.tag.living{border-color:rgba(111,191,115,.42); color:var(--moss); background:rgba(111,191,115,.09)}
+.tag.human{border-color:rgba(224,131,79,.42); color:var(--clay); background:rgba(224,131,79,.09)}
+.tag.persist{border-color:rgba(128,224,208,.45); color:var(--accent-soft); background:rgba(128,224,208,.09)}
+.tag.frag{border-color:rgba(233,185,73,.45); color:var(--gold); background:rgba(233,185,73,.09)}
+.tag.trans{border-color:rgba(224,131,79,.45); color:var(--clay); background:rgba(224,131,79,.09)}
+.chart-box{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px}
+.chart-box h4{font-size:17px; margin-bottom:4px}
+.chart-box .sub{font-size:11.5px; color:var(--dimmer); letter-spacing:.05em; margin-bottom:18px}
+.chart-wrap{position:relative; height:280px}
+.note{font-size:12.5px; color:var(--dimmer); font-style:italic}
+
+/* ---------- FRAMEWORK ---------- */
+.layers{display:grid; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-top:36px}
+.layer{background:var(--card); padding:22px 26px; display:grid; grid-template-columns:64px 1fr 1.15fr; gap:22px; align-items:center; transition:background .25s}
+.layer:hover{background:#1a1f2b}
+.layer .num{font-family:'Fraunces',serif; font-size:30px; color:var(--accent-deep); font-weight:900}
+.layer strong{display:block; font-size:16px; font-weight:700}
+.layer .zh{font-size:13.5px}
+.layer p{margin:0; font-size:14px; color:var(--dim)}
+@media(max-width:760px){.layer{grid-template-columns:44px 1fr; gap:14px}.layer p{grid-column:1/-1}}
+
+.dim-card{position:relative; overflow:hidden}
+.dim-card::before{content:''; position:absolute; inset:0 0 auto 0; height:3px}
+.dim-card.water::before{background:linear-gradient(90deg,var(--accent),transparent)}
+.dim-card.living::before{background:linear-gradient(90deg,var(--moss),transparent)}
+.dim-card.human::before{background:linear-gradient(90deg,var(--clay),transparent)}
+.dim-card h3{font-size:22px; margin:14px 0 4px}
+.dim-card p{color:var(--dim); font-size:14.5px; margin:14px 0 0}
+.icon-sq{
+  width:44px; height:44px; border-radius:11px; display:grid; place-items:center; font-size:20px;
+  background:rgba(255,255,255,.05); border:1px solid var(--line);
+}
+
+.mem-card{border-radius:var(--radius); padding:28px; border:1px solid var(--line); background:var(--card); position:relative}
+.mem-card .bar{height:5px; border-radius:99px; margin-bottom:20px}
+.mem-card.p .bar{background:linear-gradient(90deg,var(--accent-soft),rgba(128,224,208,.15))}
+.mem-card.f .bar{background:repeating-linear-gradient(90deg,var(--gold) 0 14px,rgba(233,185,73,.12) 14px 24px)}
+.mem-card.t .bar{background:linear-gradient(90deg,var(--clay),rgba(224,131,79,.12))}
+.mem-card h3{font-size:21px; margin-bottom:2px}
+.mem-card p{color:var(--dim); font-size:14.5px; margin:14px 0 0}
+
+/* ---------- JOURNEY MAP ---------- */
+.mapwrap{
+  position:relative; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+  background:
+    radial-gradient(circle at 22% 30%,rgba(61,167,255,.10),transparent 55%),
+    radial-gradient(circle at 80% 70%,rgba(128,224,208,.07),transparent 55%),
+    #0d1017;
+  aspect-ratio:16/8; min-height:340px; margin-top:38px;
+}
+.mapwrap .graticule{
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:8.33% 12.5%;
+}
+.mapwrap .dots{
+  position:absolute; inset:0;
+  background-image:radial-gradient(rgba(255,255,255,.10) 1px,transparent 1px);
+  background-size:16px 16px; opacity:.55;
+}
+.plot{position:absolute; inset:9% 7%}
+.plot svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:1}
+.pin{position:absolute; transform:translate(-50%,-50%); z-index:3}
+.pin i{
+  display:block; width:16px; height:16px; border-radius:50%; font-style:normal;
+  background:radial-gradient(circle at 32% 32%,var(--accent-soft),var(--accent));
+  box-shadow:0 0 0 5px rgba(61,167,255,.13),0 0 20px rgba(128,224,208,.7);
+  font-size:9px; font-weight:800; color:#04212e; display:grid; place-items:center; font-family:'Inter',sans-serif;
+}
+.pin.future i{background:radial-gradient(circle at 32% 32%,#ffe9a8,var(--gold)); box-shadow:0 0 0 5px rgba(233,185,73,.13),0 0 20px rgba(233,185,73,.6); color:#2c2003}
+.pin b{
+  position:absolute; left:24px; top:50%; transform:translateY(-50%); white-space:nowrap;
+  font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--dim); font-weight:700;
+  background:rgba(9,11,16,.72); padding:3px 9px; border-radius:6px; border:1px solid var(--line);
+}
+.pin.left b{left:auto; right:24px}
+.maplegend{position:absolute; right:16px; bottom:14px; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--dimmer)}
+@media(max-width:760px){.pin b{display:none}}
+.journey-steps{counter-reset:js; display:grid; gap:18px; grid-template-columns:repeat(3,1fr); margin-top:26px}
+@media(max-width:900px){.journey-steps{grid-template-columns:1fr}}
+.jstep{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px}
+.jstep .n{font-family:'Fraunces',serif; font-size:13px; color:var(--gold); letter-spacing:.12em; font-weight:700}
+.jstep h4{font-size:17px; margin:8px 0 2px}
+.jstep p{margin:12px 0 0; font-size:14px; color:var(--dim)}
+
+/* ---------- FEATURE / QUESTION ---------- */
+.qpanel{
+  border-radius:20px; padding:clamp(30px,5vw,58px); text-align:center; border:1px solid rgba(61,167,255,.2);
+  background:radial-gradient(ellipse at 50% 0%,rgba(61,167,255,.14),transparent 66%),var(--card);
+  box-shadow:var(--shadow); margin-top:34px;
+}
+.qpanel .qmark{font-family:'Fraunces',serif; font-size:56px; color:var(--accent); line-height:.6; opacity:.5}
+.qpanel h3{font-size:clamp(21px,2.9vw,32px); line-height:1.35; max-width:30ch; margin:22px auto 0; letter-spacing:-.015em}
+.qpanel .zh-q{color:var(--dim); font-size:clamp(14px,1.8vw,17px); max-width:44ch; margin:18px auto 0; font-weight:500}
+
+.feat{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px; transition:.25s; position:relative}
+.feat:hover{border-color:rgba(128,224,208,.36); transform:translateY(-3px)}
+.feat .fid{font-family:'Fraunces',serif; font-size:12px; letter-spacing:.16em; color:var(--accent-deep); font-weight:900}
+.feat h4{font-size:17px; margin:10px 0 3px}
+.feat p{font-size:13.5px; color:var(--dim); margin:12px 0 0}
+.feat .src{margin-top:14px; font-size:11px; letter-spacing:.06em; color:var(--dimmer); border-top:1px dashed var(--line); padding-top:11px}
+
+/* ---------- PLACE STORIES ---------- */
+.story{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column}
+.story img{width:100%; aspect-ratio:16/10; object-fit:cover; filter:saturate(.92)}
+.story .body{padding:24px; flex:1; display:flex; flex-direction:column}
+.story h4{font-size:20px; margin:12px 0 2px}
+.story p{font-size:14px; color:var(--dim); margin:14px 0 0}
+.story .meta{margin-top:auto; padding-top:18px; font-size:11.5px; color:var(--dimmer); letter-spacing:.05em; border-top:1px dashed var(--line)}
+
+/* ---------- DATA ---------- */
+.ds{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:28px; margin-bottom:20px}
+.ds-head{display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap}
+.ds-head h3{font-size:21px}
+.ds-head h3 span.no{color:var(--accent); margin-right:10px; font-family:'Fraunces',serif}
+.links{display:flex; flex-wrap:wrap; gap:9px; margin:18px 0 4px}
+.chip{
+  display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:99px;
+  border:1px solid var(--line-strong); background:rgba(255,255,255,.03);
+  font-size:12px; color:var(--dim); text-decoration:none; transition:.2s; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+.chip:hover{border-color:var(--accent); color:var(--accent-soft); background:rgba(61,167,255,.08)}
+.chip .ar{color:var(--gold)}
+.table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:11px; margin-top:20px}
+table{width:100%; border-collapse:collapse; font-size:13.5px; min-width:520px}
+th{
+  text-align:left; padding:12px 16px; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--dimmer); background:rgba(255,255,255,.03); border-bottom:1px solid var(--line); font-weight:700;
+}
+td{padding:12px 16px; border-bottom:1px solid var(--line); color:var(--dim); vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.k{color:var(--ink); font-weight:600}
+td.v{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--gold); font-size:12.5px}
+
+.steps{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:34px}
+@media(max-width:900px){.steps{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.steps{grid-template-columns:1fr}}
+.step{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px}
+.step .badge{
+  width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-size:13px; font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--accent-soft)); color:#04212e; margin-bottom:14px;
+}
+.step h4{font-size:16px; margin-bottom:2px}
+.step p{font-size:13.5px; color:var(--dim); margin:11px 0 0}
+
+.checks{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:30px}
+@media(max-width:760px){.checks{grid-template-columns:1fr}}
+.check{display:flex; gap:14px; align-items:flex-start; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px}
+.check .ok{flex:none; width:24px; height:24px; border-radius:50%; background:rgba(111,191,115,.16); border:1px solid rgba(111,191,115,.4); color:var(--moss); display:grid; place-items:center; font-size:12px; font-weight:800; margin-top:2px}
+.check strong{display:block; font-size:14.5px}
+.check span{font-size:13px; color:var(--dim)}
+
+.feas{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px}
+.feas .lbl{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dimmer); font-weight:700}
+.feas .val{font-family:'Fraunces',serif; font-size:22px; margin:8px 0 14px}
+.track{height:6px; border-radius:99px; background:rgba(255,255,255,.07); overflow:hidden}
+.fill{height:100%; border-radius:99px; background:linear-gradient(90deg,var(--accent),var(--accent-soft)); width:0; transition:width 1.3s cubic-bezier(.2,.7,.3,1)}
+
+.limits{border:1px solid rgba(233,185,73,.24); background:linear-gradient(180deg,rgba(233,185,73,.055),transparent); border-radius:var(--radius); padding:28px; margin-top:34px}
+.limits h4{font-size:18px; color:var(--gold); margin-bottom:14px}
+.limits ul{margin:0; padding-left:20px; color:var(--dim); font-size:14px}
+.limits li{margin-bottom:10px}
+
+.cta-banner{
+  margin-top:56px; border-radius:20px; padding:clamp(32px,5vw,56px); text-align:center;
+  background:radial-gradient(ellipse at 50% 120%,rgba(61,167,255,.2),transparent 62%),linear-gradient(180deg,#171d2a,#12151d);
+  border:1px solid rgba(128,224,208,.2);
+}
+.cta-banner h3{font-size:clamp(23px,3.4vw,36px); max-width:24ch; margin:0 auto; letter-spacing:-.02em}
+.cta-banner p{color:var(--dim); max-width:58ch; margin:18px auto 0}
+
+.schools{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:26px}
+@media(max-width:900px){.schools{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.schools{grid-template-columns:1fr}}
+.school{border:1px solid var(--line); border-radius:12px; padding:18px; background:var(--card)}
+.school strong{font-size:14.5px; display:block}
+.school span{font-size:12.5px; color:var(--dim); display:block; margin-top:7px}
+
+footer{border-top:1px solid var(--line); padding:56px 0 64px; text-align:center; background:var(--bg)}
+footer .brand{justify-content:center; display:inline-flex}
+footer .srcs{font-size:12px; color:var(--dimmer); margin-top:20px; letter-spacing:.04em}
+
+/* ---------- REVEAL ---------- */
+.reveal{opacity:0; transform:translateY(20px); transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.3,1)}
+.reveal.visible{opacity:1; transform:none}
+body.hide-zh .zh,body.hide-zh .lead-zh,body.hide-zh .zh-q,body.hide-zh .hero-zh{display:none!important}
+body.hide-en .en-only{display:none!important}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a class="brand" href="#home">
+      <span class="dot"></span>
+      <span>Land Memory Lab<small>土地记忆实验室</small></span>
+    </a>
+    <div class="navlinks">
+      <a href="#home">Home</a>
+      <a href="#remember">How Landscapes Remember</a>
+      <a href="#journey">Edward’s Journey</a>
+      <a href="#aurora">Beneath Aurora</a>
+      <a href="#stories">Place Stories</a>
+      <a href="#data">Data &amp; Methods</a>
+      <a href="#future">Future Studies</a>
+      <button class="langbtn" id="langbtn">中 / EN</button>
+    </div>
+    <button class="langbtn" id="langbtn2" style="display:none">中 / EN</button>
+  </div>
+</nav>
+
+<!-- ================= HOME ================= -->
+<header class="hero" id="home">
+  <div class="hero-bg">
+    <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858447242-image-1.png" alt="Aerial view of a river corridor and wetland meeting a suburban edge at golden hour" />
+  </div>
+  <div class="container">
+    <span class="pill">GIS · Environmental Research Platform · Case Study 01</span>
+    <h1>How Landscapes Carry the <span class="grad">Traces of Time</span></h1>
+    <div class="hero-zh">景观如何承载时间的痕迹</div>
+    <p class="sum">Landscapes carry time in different ways. Glacial deposits preserve the history of the Earth. Water remembers the paths it has followed. Forests and wetlands record ecological continuity, while roads and neighbourhoods leave new marks on the land. <strong style="color:var(--ink)">Land Memory Lab</strong> uses GIS, long-term public data, and visual storytelling to explore how these traces remain, fragment, and take new forms across time.</p>
+    <p class="lead-zh">景观以不同方式承载时间。冰川沉积物保存着地球形成的历史，水记得自己流经过的路径，森林与湿地记录着生态系统的延续，道路和社区则在土地上留下新的印记。土地记忆实验室通过 GIS、长期公共数据与动态视觉叙事，探索这些痕迹如何在时间中持续、破碎，并形成新的形态。</p>
+    <div class="ctas">
+      <a class="btn btn-p" href="#aurora">Enter Beneath Aurora →</a>
+      <a class="btn btn-g" href="#remember">How Landscapes Remember</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>2002 · 2013 · 2023</b><span>Land-cover time slices</span></div>
+      <div class="stat"><b>21 yrs</b><span>Observation window</span></div>
+      <div class="stat"><b>3</b><span>Memory classes</span></div>
+      <div class="stat"><b>4</b><span>Place stories</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= HOW LANDSCAPES REMEMBER ================= -->
+<section id="remember">
+  <div class="container">
+    <div class="eyebrow">The Framework</div>
+    <h2 class="section-title">How Landscapes Remember<span class="zh">土地记忆的研究框架</span></h2>
+    <p class="lead">Different lands preserve history in different ways. Land Memory Lab reads a place as a stack of overlapping records — geological, hydrological, ecological, and human — and asks which of those records are still legible in the landscape today.</p>
+    <p class="lead-zh">不同的土地以不同方式保存历史。土地记忆实验室把一个地方视为多层叠加的记录——地质的、水文的、生态的与人类的——并追问：在今天的景观中，哪些记录仍然可以被读出来。</p>
+
+    <div class="layers">
+      <div class="layer"><div class="num">01</div><div><strong>Geology &amp; Glacial Deposits</strong><span class="zh">地质与冰川沉积物</span></div><p>Sand, gravel, silt, clay and till record how the land itself was formed and where water can move underground.</p></div>
+      <div class="layer"><div class="num">02</div><div><strong>Rivers, Wetlands &amp; Groundwater</strong><span class="zh">河流、湿地与地下水</span></div><p>Water remembers the paths it has followed — channels, marshes, seeps and recharge areas trace the route of time.</p></div>
+      <div class="layer"><div class="num">03</div><div><strong>Forests &amp; Vegetation</strong><span class="zh">森林与植被</span></div><p>Woodlands, meadows and wetland vegetation record ecological continuity — and where that continuity was broken.</p></div>
+      <div class="layer"><div class="num">04</div><div><strong>Roads, Housing &amp; Urban Space</strong><span class="zh">道路、住宅与城市空间</span></div><p>Built land records human choices: which land was kept, which was crossed, and which was rewritten entirely.</p></div>
+      <div class="layer"><div class="num">05</div><div><strong>Local &amp; Personal Stories</strong><span class="zh">地方故事与个人记忆</span></div><p>What people remember about a place records the relationship between a community and the land it stands on.</p></div>
+    </div>
+
+    <blockquote>
+      <p>“How do landscapes carry the traces of time through water, vegetation, landforms, and human activity?”</p>
+      <span class="zh">景观如何通过水、植被、地貌与人类活动，承载时间留下的痕迹？</span>
+    </blockquote>
+
+    <div class="eyebrow" style="margin-top:70px">Three Research Dimensions</div>
+    <h3 style="font-size:clamp(24px,3vw,34px)">Reading a Landscape in Three Registers<span class="zh">三个研究维度</span></h3>
+    <div class="grid g3" style="margin-top:30px">
+      <div class="card dim-card water">
+        <div class="icon-sq">💧</div>
+        <h3>Water Memory</h3>
+        <span class="tag water">水的记忆</span>
+        <p>Whether wetlands, streams and the natural land around them have persisted over time — and how built land has gradually approached, narrowed, or divided these hydrological spaces.</p>
+        <p class="lead-zh" style="font-size:13.5px">研究湿地、溪流和水系周边的自然环境是否长期存在，以及城市土地如何逐渐接近或分割这些水文空间。</p>
+      </div>
+      <div class="card dim-card living">
+        <div class="icon-sq">🌿</div>
+        <h3>Living Memory</h3>
+        <span class="tag living">生命 / 植被的记忆</span>
+        <p>The persistence, fragmentation and transformation of forests, meadows, wetland vegetation and natural corridors across more than two decades.</p>
+        <p class="lead-zh" style="font-size:13.5px">研究森林、草地、湿地植被和自然走廊在二十多年间的持续、破碎与转变。</p>
+      </div>
+      <div class="card dim-card human">
+        <div class="icon-sq">🏘️</div>
+        <h3>Human Imprint</h3>
+        <span class="tag human">人类印记</span>
+        <p>How housing, roads, impervious surfaces and urban expansion write new spatial structures onto the land.</p>
+        <p class="lead-zh" style="font-size:13.5px">研究住宅、道路、硬化地表和城市扩张如何在土地上留下新的空间结构。</p>
+      </div>
+    </div>
+
+    <div class="eyebrow" style="margin-top:70px">Classification</div>
+    <h3 style="font-size:clamp(24px,3vw,34px)">Three Types of Land Memory<span class="zh">三类土地记忆</span></h3>
+    <p class="lead">Every parcel in the study area is assigned to one of three classes, based on how its natural cover and spatial context changed between the first and last time slice.</p>
+    <div class="grid g3" style="margin-top:30px">
+      <div class="mem-card p">
+        <div class="bar"></div>
+        <span class="tag persist">Persistent</span>
+        <h3 style="margin-top:12px">Persistent Memory<span class="zh">持续记忆</span></h3>
+        <p>Wetlands, streams, woodlands or natural corridors that have continued from 2002 to today, with the surrounding land structure remaining relatively intact.</p>
+        <p class="lead-zh" style="font-size:13.5px">湿地、溪流、林地或自然走廊从 2002 年持续至今，周边土地结构保持相对完整。</p>
+      </div>
+      <div class="mem-card f">
+        <div class="bar"></div>
+        <span class="tag frag">Fragmented</span>
+        <h3 style="margin-top:12px">Fragmented Memory<span class="zh">破碎记忆</span></h3>
+        <p>The natural feature still exists, but roads, buildings or urban expansion have weakened its original spatial connectivity.</p>
+        <p class="lead-zh" style="font-size:13.5px">自然特征仍然存在，但道路、建筑或城市扩张削弱了原有的空间连通性。</p>
+      </div>
+      <div class="mem-card t">
+        <div class="bar"></div>
+        <span class="tag trans">Transformed</span>
+        <h3 style="margin-top:12px">Transformed Memory<span class="zh">重写记忆</span></h3>
+        <p>Former natural or open land has become built land, and the relationship between soil, water and vegetation has been reshaped.</p>
+        <p class="lead-zh" style="font-size:13.5px">过去的自然或开放土地转变为城市用地，土地、水与植被之间的关系被重新塑造。</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:44px; grid-template-columns:1.4fr 1fr">
+      <div class="chart-box">
+        <h4>Land-Cover Composition Across Three Time Slices</h4>
+        <div class="sub">Representative structure — actual values to be computed from LSRCA land-cover layers</div>
+        <div class="chart-wrap"><canvas id="chartCover"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h4>Land Memory Classes</h4>
+        <div class="sub">Illustrative distribution — output of the classification, not a measured result</div>
+        <div class="chart-wrap"><canvas id="chartMem"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EDWARD'S JOURNEY ================= -->
+<section class="alt" id="journey">
+  <div class="container">
+    <div class="eyebrow">The Researcher</div>
+    <h2 class="section-title">Edward’s Journey<span class="zh">Edward 如何学会阅读土地</span></h2>
+    <p class="lead">How a researcher learns to read land: through stories first, then through walking, then through models and maps. Each stop on this map added one way of seeing.</p>
+
+    <div class="mapwrap">
+      <div class="graticule"></div>
+      <div class="dots"></div>
+      <div class="plot">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="route" x1="1" y1="1" x2="0" y2="0">
+              <stop offset="0%" stop-color="#80e0d0" stop-opacity=".9"/>
+              <stop offset="55%" stop-color="#3da7ff" stop-opacity=".7"/>
+              <stop offset="100%" stop-color="#3da7ff" stop-opacity=".45"/>
+            </linearGradient>
+          </defs>
+          <path d="M 94.3 88.7 Q 62 94 28.2 60.5" fill="none" stroke="url(#route)" stroke-width="1.6"
+                stroke-dasharray="5 4" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
+          <path d="M 28.2 60.5 L 20.3 44.4 L 25.2 51.7" fill="none" stroke="url(#route)" stroke-width="1.6"
+                vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M 25.2 51.7 Q 10 40 5.3 22.9 L 5.8 9.7" fill="none" stroke="#e9b949" stroke-opacity=".42"
+                stroke-width="1.4" stroke-dasharray="3 5" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
+        </svg>
+        <div class="pin left" style="left:94.3%; top:88.7%"><i>1</i><b>Shenzhen 深圳</b></div>
+        <div class="pin" style="left:25.2%; top:51.7%"><i>2</i><b>Aurora, Ontario</b></div>
+        <div class="pin" style="left:28.2%; top:60.5%"><i>3</i><b>Tufts · Boston</b></div>
+        <div class="pin left" style="left:20.3%; top:44.4%"><i>4</i><b>Cornell · Ithaca</b></div>
+        <div class="pin future" style="left:5.3%; top:22.9%"><i>5</i><b>Whitehorse (future)</b></div>
+        <div class="pin future" style="left:5.8%; top:9.7%"><i>6</i><b>Inuvik (future)</b></div>
+      </div>
+      <div class="maplegend">Schematic route map · positions approximate</div>
+    </div>
+
+    <div class="journey-steps">
+      <div class="jstep">
+        <div class="n">01 · SHENZHEN</div>
+        <h4>Land as Story<span class="zh">从故事开始认识土地</span></h4>
+        <p>Edward first came to know land through his grandfather’s accounts of history and hometown. Land was something people remembered out loud, long before it was something to be measured.</p>
+      </div>
+      <div class="jstep">
+        <div class="n">01 · SHENZHEN</div>
+        <h4>Land as Observation<span class="zh">在长期徒步中学会观察</span></h4>
+        <p>Years of hiking taught him to read vegetation, moisture, insects, animal tracks and seasonal change — the difference between looking at a landscape and reading one.</p>
+      </div>
+      <div class="jstep">
+        <div class="n">03 · 04 — TUFTS &amp; CORNELL</div>
+        <h4>Land as System<span class="zh">建立环境科学基础</span></h4>
+        <p>Climate coursework at Tufts and Cornell built the environmental-science foundation: earth systems, hydrology, and the language of long-term environmental change.</p>
+      </div>
+      <div class="jstep">
+        <div class="n">04 · PERMAFROST RESEARCH</div>
+        <h4>Land as Model<span class="zh">计算建模与科学可视化</span></h4>
+        <p>Permafrost research introduced computational modelling, data analysis and scientific visualisation — turning observation into something testable and reproducible.</p>
+      </div>
+      <div class="jstep">
+        <div class="n">02 · AURORA</div>
+        <h4>Land as Record<span class="zh">Aurora：第一个完整案例</span></h4>
+        <p>In Aurora, all of it converges: official GIS layers from 2002, 2013 and 2023 become a way to ask what a single town has kept, broken, and rewritten.</p>
+      </div>
+      <div class="jstep">
+        <div class="n">05 · 06 — FUTURE</div>
+        <h4>Land as Method<span class="zh">方法的迁移</span></h4>
+        <p>The framework is designed to travel: Whitehorse, Inuvik and other northern landscapes where the record of time is written in permafrost rather than subdivisions.</p>
+      </div>
+    </div>
+
+    <blockquote>
+      <p>“Stories taught Edward that people remember the land. GIS led him to ask what the land itself remembers.”</p>
+      <span class="zh">故事让 Edward 理解人如何记住土地，GIS 则让他开始追问：土地本身记得什么？</span>
+    </blockquote>
+
+    <div class="split" style="margin-top:44px">
+      <figure class="figure">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858425387-image-1.png" alt="A student researcher at the boundary between a neighbourhood and a protected woodlot" />
+        <figcaption>Field observation at the edge — where built land meets a protected natural area</figcaption>
+      </figure>
+      <div>
+        <div class="eyebrow">Why Aurora</div>
+        <h3 style="font-size:clamp(22px,2.8vw,30px)">A Small Town With a Complete Record</h3>
+        <p class="lead">Aurora sits where three landscape systems meet: the East Holland River, Tannery Creek, and the southern flank of the Oak Ridges Moraine. It is small enough to study end-to-end, and documented well enough — through the Lake Simcoe Region Conservation Authority, the Province of Ontario, and the Town’s own data hub — to make a twenty-one-year comparison genuinely verifiable.</p>
+        <p class="lead-zh">Aurora 处在三个景观系统的交汇处：East Holland River、Tannery Creek 与 Oak Ridges Moraine 南缘。它足够小，可以被完整研究；同时公共数据足够完善，使二十一年的对比分析真正可验证。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BENEATH AURORA ================= -->
+<section id="aurora">
+  <div class="container">
+    <div class="eyebrow">Case Study 01</div>
+    <h2 class="section-title">Beneath Aurora<span class="zh">Water, Vegetation, and the Stories Written into the Land</span></h2>
+    <p class="lead">Using official GIS data from 2002, 2013 and 2023, Beneath Aurora examines how the town’s natural vegetation, wetlands, water corridors and built land have changed — and which land memories are still visible in the landscape today. The study area is the Aurora municipal boundary together with the natural areas connected to the East Holland River, Tannery Creek and the Oak Ridges Moraine.</p>
+    <p class="lead-zh">研究范围包括 Aurora 市界，以及与 East Holland River、Tannery Creek 和 Oak Ridges Moraine 相连的主要自然区域。</p>
+
+    <div class="qpanel">
+      <div class="qmark">“</div>
+      <h3>How did water corridors, natural vegetation, and built land change across Aurora between 2002 and 2023, and what traces of the landscape’s past remain visible today?</h3>
+      <div class="zh-q">2002 年至 2023 年间，Aurora 的水系走廊、自然植被和城市用地发生了怎样的变化？今天的景观中仍然可以看到哪些过去留下的痕迹？</div>
+    </div>
+
+    <div class="split" style="margin-top:64px">
+      <div>
+        <div class="eyebrow">Water Memory</div>
+        <h3 style="font-size:clamp(22px,2.8vw,30px)">Where the Water Still Runs<span class="zh">水的记忆</span></h3>
+        <p class="lead">A 100-metre buffer is generated around every mapped watercourse and wetland. Within that buffer, the platform tracks how much land stayed natural, how much became impervious, and where the buffer was crossed by new roads — the clearest signal of a water corridor losing its continuity.</p>
+        <p class="lead-zh">在所有已制图的溪流与湿地周围生成 100 米缓冲区，追踪其中自然土地的保留、硬化地表的增加，以及新道路的穿越——水系走廊失去连续性最直接的信号。</p>
+        <p class="note" style="margin-top:18px">Context: LSRCA reports that impervious cover across the Lake Simcoe watershed reached 4.3% in 2013, having increased since 2002. Aurora-specific values are what this study computes.</p>
+      </div>
+      <figure class="figure">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858403310-image-1.png" alt="A slow creek inside a wetland with cattails and dark reflective water" />
+        <figcaption>Wetland and creek corridor — the hydrological memory layer</figcaption>
+      </figure>
+    </div>
+
+    <div class="grid g2" style="margin-top:44px">
+      <div class="chart-box">
+        <h4>Impervious Cover Within 100 m of Water</h4>
+        <div class="sub">Representative trend — the metric this platform computes, not a measured result</div>
+        <div class="chart-wrap"><canvas id="chartBuffer"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h4>Land Memory Index — Indicator Weights</h4>
+        <div class="sub">Hypothesised weighting, to be tested and calibrated against the data</div>
+        <div class="chart-wrap"><canvas id="chartIndex"></canvas></div>
+      </div>
+    </div>
+
+    <div class="split rev" style="margin-top:64px">
+      <figure class="figure">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858438213-image-1.png" alt="Mature hardwood woodlot in late autumn with suburban rooftops visible beyond the trees" />
+        <figcaption>Woodlot interior with the suburban edge visible beyond — fragmentation in one frame</figcaption>
+      </figure>
+      <div>
+        <div class="eyebrow">Living Memory</div>
+        <h3 style="font-size:clamp(22px,2.8vw,30px)">What the Vegetation Kept<span class="zh">生命 / 植被的记忆</span></h3>
+        <p class="lead">Forest, woodland, meadow, shrub and wetland vegetation are compared patch by patch across the three time slices. Retention answers whether a patch survived; connectivity and edge density answer whether it survived <em>whole</em>. A woodlot can lose none of its area and still lose most of what made it a corridor.</p>
+        <p class="lead-zh">逐个斑块比较三个年份的森林、林地、草地、灌木与湿地植被。保留率回答斑块是否存续；连通性与边缘密度回答它是否<em>完整地</em>存续——一片林地可以面积不变，却失去作为走廊的全部功能。</p>
+      </div>
+    </div>
+
+    <div class="split" style="margin-top:64px">
+      <div>
+        <div class="eyebrow">What Lies Beneath</div>
+        <h3 style="font-size:clamp(22px,2.8vw,30px)">The Oldest Memory in Aurora<span class="zh">Aurora 地下的记忆</span></h3>
+        <p class="lead">Beneath the land-cover layers sits the deepest record of all: glacial sand, gravel, silt, clay and till left by the ice, and the Oak Ridges Moraine recharge system that still moves water through them. Surficial geology, elevation and hillshade explain <em>why</em> wetlands sit where they sit — and why some parts of Aurora were always going to stay wet.</p>
+        <p class="lead-zh">土地覆盖之下是最古老的记录：冰川留下的砂、砾、粉砂、黏土与冰碛，以及至今仍在其中输送水的 Oak Ridges Moraine 补给系统。表层地质、高程与山体阴影解释了湿地为何出现在它们所在的位置。</p>
+      </div>
+      <figure class="figure">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858417836-image-1.png" alt="Cutaway cross-section of glacial deposits and groundwater flow beneath a wetland" />
+        <figcaption>Schematic subsurface: glacial deposits and groundwater beneath the surface record</figcaption>
+      </figure>
+    </div>
+
+    <div class="eyebrow" style="margin-top:76px">The Platform</div>
+    <h3 style="font-size:clamp(24px,3vw,34px)">Seven Interactive Views<span class="zh">网站功能与对应数据</span></h3>
+    <p class="lead">Each view answers one question, and each is driven by a specific set of official layers.</p>
+    <div class="grid g3" style="margin-top:30px">
+      <div class="feat"><div class="fid">VIEW 01</div><h4>Aurora Through Time<span class="zh">时间切换地图</span></h4><p>A single map with a 2002 / 2013 / 2023 switch — wetlands, stream corridors, woodlands and the urban–natural boundary redrawn at each time slice.</p><div class="src">Land cover 2002 · 2013 · 2023</div></div>
+      <div class="feat"><div class="fid">VIEW 02</div><h4>Compare the Landscape<span class="zh">双年份对比</span></h4><p>Side-by-side and swipe comparison of any two years, filtered to natural vegetation, water &amp; wetlands, or built land.</p><div class="src">Natural vegetation · Water &amp; wetlands · Built land</div></div>
+      <div class="feat"><div class="fid">VIEW 03</div><h4>Natural Memory Retention<span class="zh">自然覆盖保留分析</span></h4><p>A 2002-versus-2023 overlay showing which natural patches were kept, which shrank, and which disappeared entirely.</p><div class="src">Land cover 2002 vs. 2023</div></div>
+      <div class="feat"><div class="fid">VIEW 04</div><h4>Water Corridor Memory<span class="zh">水系走廊记忆</span></h4><p>The 100-metre buffer analysis around streams and wetlands: natural retention, impervious gain, and every new road crossing.</p><div class="src">Streams · Wetlands · Impervious surfaces</div></div>
+      <div class="feat"><div class="fid">VIEW 05</div><h4>What Lies Beneath Aurora<span class="zh">Aurora 之下</span></h4><p>Surficial geology, elevation and hillshade under the Oak Ridges Moraine boundary — the physical reason the landscape behaves as it does.</p><div class="src">ORM boundary · Surficial geology · HRDEM</div></div>
+      <div class="feat"><div class="fid">VIEW 06</div><h4>Land Memory Map<span class="zh">土地记忆地图</span></h4><p>The synthesis layer: every area classified as Persistent, Fragmented or Transformed, with the evidence behind each classification.</p><div class="src">Retention · Buffer change · Built expansion</div></div>
+      <div class="feat"><div class="fid">VIEW 07</div><h4>Place Stories<span class="zh">地点故事</span></h4><p>Four representative Aurora locations, each told through its own layers, photographs and the human record attached to it.</p><div class="src">Land cover · Wetlands · Hydrology · Geology</div></div>
+    </div>
+
+    <figure class="figure" style="margin-top:44px">
+      <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858413024-image-1.png" alt="Dark-themed GIS dashboard mockup with year slider, stream corridors and charts" />
+      <figcaption>Interface concept — year slider, buffer rings, and linked land-cover statistics</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ================= PLACE STORIES ================= -->
+<section class="alt" id="stories">
+  <div class="container">
+    <div class="eyebrow">Place Stories</div>
+    <h2 class="section-title">Four Places, Four Kinds of Memory<span class="zh">四个代表性地点的动态故事</span></h2>
+    <p class="lead">Maps show pattern; places show meaning. Four sites across Aurora were selected because each represents a different relationship between water, vegetation and human decision. The memory class listed for each is the working hypothesis this study sets out to test — not a finding.</p>
+    <p class="lead-zh">地图呈现的是格局，地点呈现的是意义。以下每个地点标注的记忆类型是本研究待验证的假设，而非已得出的结论。</p>
+
+    <div class="grid g4" style="margin-top:36px">
+      <article class="story">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858403310-image-1.png" alt="Marsh with cattails and open water" />
+        <div class="body">
+          <span class="tag water">Water Memory</span>
+          <h4>McKenzie Marsh<span class="zh">湿地与开放水面</span></h4>
+          <p>A wetland complex held inside the town’s built fabric. The question is not whether the marsh survived — it did — but whether the land that feeds it did.</p>
+          <div class="meta">Working hypothesis: <b style="color:var(--gold)">Fragmented</b></div>
+        </div>
+      </article>
+      <article class="story">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858438213-image-1.png" alt="Hardwood forest with footpath" />
+        <div class="body">
+          <span class="tag living">Living Memory</span>
+          <h4>Sheppard’s Bush<span class="zh">Tannery Creek 林地</span></h4>
+          <p>Mature woodland along Tannery Creek, protected long enough to still function as continuous habitat. A test case for what protection actually preserves.</p>
+          <div class="meta">Working hypothesis: <b style="color:var(--accent-soft)">Persistent</b></div>
+        </div>
+      </article>
+      <article class="story">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858447242-image-1.png" alt="River corridor through open land seen from above" />
+        <div class="body">
+          <span class="tag water">Water Memory</span>
+          <h4>East Holland River Corridor<span class="zh">东荷兰河走廊</span></h4>
+          <p>The river that carries Aurora’s water north toward Lake Simcoe. Its corridor crosses farmland, road crossings and new development in a single run.</p>
+          <div class="meta">Working hypothesis: <b style="color:var(--gold)">Fragmented</b></div>
+        </div>
+      </article>
+      <article class="story">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858428886-image-1.png" alt="Analytical map showing land classified into three memory categories" />
+        <div class="body">
+          <span class="tag human">Human Imprint</span>
+          <h4>North-East Aurora (2C Lands)<span class="zh">城市扩张前沿</span></h4>
+          <p>Aurora’s greenfield expansion area, where open and agricultural land became neighbourhoods within the study window. The clearest case of a landscape rewritten.</p>
+          <div class="meta">Working hypothesis: <b style="color:var(--clay)">Transformed</b></div>
+        </div>
+      </article>
+    </div>
+
+    <div class="split" style="margin-top:56px">
+      <figure class="figure">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858428886-image-1.png" alt="Land memory classification map with three shaded categories" />
+        <figcaption>Land Memory Map concept — persistent, fragmented and transformed land</figcaption>
+      </figure>
+      <div>
+        <div class="eyebrow">Synthesis</div>
+        <h3 style="font-size:clamp(22px,2.8vw,30px)">From Four Places to One Map</h3>
+        <p class="lead">The place stories and the classification layer are built to check each other. If a site that reads as “persistent” in the data feels fragmented on the ground — or in what residents remember about it — that gap is itself a result worth reporting.</p>
+        <p class="lead-zh">地点故事与分类图层互为验证。如果数据显示“持续”的地点，在实地或居民记忆中却是破碎的，这一差距本身就是值得报告的结果。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DATA & METHODS ================= -->
+<section id="data">
+  <div class="container">
+    <div class="eyebrow">Data &amp; Methods</div>
+    <h2 class="section-title">Every Layer, From an Official Source<span class="zh">数据库、分析方法与研究限制</span></h2>
+    <p class="lead">All layers come from public government or conservation-authority sources. Nothing on this platform is derived from private or unverifiable data.</p>
+
+    <h3 style="font-size:22px; margin-top:44px; margin-bottom:20px">Core Research Data<span class="zh">核心研究数据</span></h3>
+
+    <div class="ds">
+      <div class="ds-head">
+        <h3><span class="no">①</span>Lake Simcoe Watershed Land Cover — 2002 · 2013 · 2023</h3>
+        <span class="tag persist">Primary</span>
+      </div>
+      <p class="lead" style="margin-top:12px">Seamless land-cover mapping derived from watershed-wide air photo coverage. This is the backbone of the study: it supplies the natural-vegetation, water-and-wetland, and built-land classes for all three time slices, plus wetland and impervious-surface layers.</p>
+      <div class="links">
+        <a class="chip" href="https://lsrca.on.ca/index.php/home/open-data/" target="_blank" rel="noopener">lsrca.on.ca/open-data <span class="ar">↗</span></a>
+        <a class="chip" href="https://lsrca-open-data-camaps.opendata.arcgis.com/" target="_blank" rel="noopener">lsrca-open-data-camaps.opendata.arcgis.com <span class="ar">↗</span></a>
+        <a class="chip" href="https://ontariogeohub-lio.opendata.arcgis.com/documents/lio::lake-simcoe-watershed-land-cover/about" target="_blank" rel="noopener">ontariogeohub-lio.opendata.arcgis.com <span class="ar">↗</span></a>
+        <a class="chip" href="https://lsrca.on.ca/wp-content/uploads/2023/07/Lake-Simcoe-Watershed-Land-Cover-Update-2018.pdf" target="_blank" rel="noopener">Land Cover Update (PDF) <span class="ar">↗</span></a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Layer</th><th>Use in this study</th><th>Time slices</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Land cover</td><td>Compare natural vegetation, water &amp; wetlands, and built land</td><td class="v">2002 · 2013 · 2023</td></tr>
+            <tr><td class="k">Wetlands</td><td>Identify long-persisting wetlands</td><td class="v">2002 · 2013 · 2023</td></tr>
+            <tr><td class="k">Impervious surfaces</td><td>Observe hardened surface change around water</td><td class="v">2002 · 2013 · 2023</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="ds">
+      <div class="ds-head">
+        <h3><span class="no">②</span>Ontario Integrated Hydrology (OIH) &amp; Watershed Boundaries</h3>
+        <span class="tag persist">Primary</span>
+      </div>
+      <p class="lead" style="margin-top:12px">Provincial hydrology data supporting watershed generation, hydrologic modelling and watercourse network analysis. Provides Aurora’s stream network, waterbodies, hydrology-enforced DEM and watershed context.</p>
+      <div class="links">
+        <a class="chip" href="https://geohub.lio.gov.on.ca/maps/mnrf::ontario-integrated-hydrology-oih-data/about" target="_blank" rel="noopener">geohub.lio.gov.on.ca — OIH <span class="ar">↗</span></a>
+        <a class="chip" href="https://data.ontario.ca/dataset/ontario-integrated-hydrology-data" target="_blank" rel="noopener">data.ontario.ca — OIH <span class="ar">↗</span></a>
+        <a class="chip" href="https://geohub.lio.gov.on.ca/maps/mnrf::ontario-watershed-boundaries-owb/about" target="_blank" rel="noopener">geohub.lio.gov.on.ca — Watershed Boundaries <span class="ar">↗</span></a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Component</th><th>Meaning</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Enhanced Watercourse</td><td>Provincial stream network</td><td class="v">Corridor geometry</td></tr>
+            <tr><td class="k">Integrated Waterbodies</td><td>Waterbodies on the stream network</td><td class="v">Buffer targets</td></tr>
+            <tr><td class="k">Enforced DEM</td><td>Hydrology-enforced elevation model</td><td class="v">Flow context</td></tr>
+            <tr><td class="k">Watershed boundaries</td><td>Primary → quaternary watersheds</td><td class="v">Study framing</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="ds">
+      <div class="ds-head">
+        <h3><span class="no">③</span>Town of Aurora Data Hub</h3>
+        <span class="tag persist">Primary</span>
+      </div>
+      <p class="lead" style="margin-top:12px">The Town’s own GIS hub — zoning, planning applications, parks and trails — used to define the municipal study boundary and to show where public natural areas and urban space meet. Data is downloadable as CSV, KML, GeoJSON, GeoTIFF or Shapefile, with GeoServices / WMS / WFS endpoints.</p>
+      <div class="links">
+        <a class="chip" href="https://town-of-aurora-data-hub-aurora.hub.arcgis.com/" target="_blank" rel="noopener">town-of-aurora-data-hub-aurora.hub.arcgis.com <span class="ar">↗</span></a>
+        <a class="chip" href="https://town-of-aurora-data-hub-aurora.hub.arcgis.com/pages/aurora-hub-gis" target="_blank" rel="noopener">Aurora Hub GIS <span class="ar">↗</span></a>
+        <a class="chip" href="https://www.aurora.ca/business-and-development/data-hub/" target="_blank" rel="noopener">aurora.ca — Data Hub <span class="ar">↗</span></a>
+      </div>
+    </div>
+
+    <h3 style="font-size:22px; margin-top:56px; margin-bottom:8px">Contextual Data<span class="zh">背景信息数据</span></h3>
+    <div class="split" style="margin-top:26px">
+      <figure class="figure">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858408445-image-1.png" alt="Stylised GIS land-cover classification map with legend blocks" />
+        <figcaption>Land-cover classification — the analytical base layer</figcaption>
+      </figure>
+      <div class="table-wrap" style="margin-top:0">
+        <table>
+          <thead><tr><th>Dataset</th><th>Use</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Oak Ridges Moraine boundary &amp; land-use designation</td><td>Spatial and protection context for Aurora</td><td><a class="chip" style="padding:4px 9px;font-size:11px" href="https://www.ontario.ca/page/oak-ridges-moraine-maps" target="_blank" rel="noopener">ontario.ca <span class="ar">↗</span></a></td></tr>
+            <tr><td class="k">ORM Conservation Plan mapping (GIS)</td><td>Core, linkage and countryside designations</td><td><a class="chip" style="padding:4px 9px;font-size:11px" href="https://geohub.lio.gov.on.ca/datasets/lio::oak-ridges-moraine-orm-land-use-designation/explore" target="_blank" rel="noopener">GeoHub <span class="ar">↗</span></a></td></tr>
+            <tr><td class="k">Surficial geology (OGSEarth)</td><td>Sand, gravel, silt, clay and till — glacial context</td><td><a class="chip" style="padding:4px 9px;font-size:11px" href="https://www.geologyontario.mndm.gov.on.ca/ogsearth.html" target="_blank" rel="noopener">geologyontario <span class="ar">↗</span></a></td></tr>
+            <tr><td class="k">HRDEM elevation &amp; hillshade</td><td>Uplands, slopes, lowlands and valleys</td><td><a class="chip" style="padding:4px 9px;font-size:11px" href="https://open.canada.ca/data/en/dataset/957782bf-847c-4644-a757-e383c0057995" target="_blank" rel="noopener">NRCan <span class="ar">↗</span></a></td></tr>
+            <tr><td class="k">Groundwater &amp; geological cross-sections</td><td>Aquifers and subsurface structure beneath Aurora</td><td><a class="chip" style="padding:4px 9px;font-size:11px" href="https://www.oakridgeswater.ca/" target="_blank" rel="noopener">ORMGP <span class="ar">↗</span></a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h3 style="font-size:22px; margin-top:56px; margin-bottom:8px">Land Classification Scheme<span class="zh">数据分类</span></h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Category</th><th>Contents</th><th>Analytical purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Natural vegetation</td><td>Forest, woodland, meadow, shrub and other natural vegetation</td><td>Retention and transformation of natural land</td></tr>
+          <tr><td class="k">Water &amp; wetlands</td><td>Wetlands, ponds, waterbodies and hydrologically related areas</td><td>Persistence of water and wetland systems</td></tr>
+          <tr><td class="k">Built land</td><td>Residential, commercial, roads and impervious surfaces</td><td>Urban expansion</td></tr>
+          <tr><td class="k">Other land</td><td>Agriculture, managed open land and others</td><td>Map context</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:22px; margin-top:56px">Analytical Workflow<span class="zh">分析方法</span></h3>
+    <div class="steps">
+      <div class="step"><div class="badge">1</div><h4>Define the study area</h4><p>Clip all layers to the Aurora municipal boundary plus connected natural areas along the East Holland River, Tannery Creek and the Oak Ridges Moraine.</p></div>
+      <div class="step"><div class="badge">2</div><h4>Harmonise the classes</h4><p>Reclassify each year’s land cover into the four analysis categories so that 2002, 2013 and 2023 are directly comparable.</p></div>
+      <div class="step"><div class="badge">3</div><h4>Align projection &amp; resolution</h4><p>Reproject to a common CRS and resample to a shared grid so that per-cell change detection is valid.</p></div>
+      <div class="step"><div class="badge">4</div><h4>Change detection</h4><p>Build 2002→2013, 2013→2023 and 2002→2023 transition matrices for every category pair.</p></div>
+      <div class="step"><div class="badge">5</div><h4>Water-corridor buffers</h4><p>Generate 100 m buffers around streams, waterbodies and wetlands; compute natural, impervious and built proportions inside each buffer per year.</p></div>
+      <div class="step"><div class="badge">6</div><h4>Fragmentation metrics</h4><p>Compute patch count, mean patch size, edge density and road-crossing counts to separate area loss from connectivity loss.</p></div>
+      <div class="step"><div class="badge">7</div><h4>Classify land memory</h4><p>Assign each area to Persistent, Fragmented or Transformed using retention, connectivity and buffer-change thresholds.</p></div>
+      <div class="step"><div class="badge">8</div><h4>Add the deep layers</h4><p>Overlay surficial geology, HRDEM elevation and the ORM boundary to explain why the observed pattern occurs where it does.</p></div>
+      <div class="step"><div class="badge">9</div><h4>Ground-truth &amp; narrate</h4><p>Visit the four story sites, photograph them, and compare what the data claims with what the place — and its residents — record.</p></div>
+    </div>
+
+    <h3 style="font-size:22px; margin-top:56px">Expected Outputs<span class="zh">预期成果</span></h3>
+    <div class="checks">
+      <div class="check"><div class="ok">✓</div><div><strong>Three-year land-cover atlas</strong><span>Harmonised 2002 / 2013 / 2023 maps for the Aurora study area.</span></div></div>
+      <div class="check"><div class="ok">✓</div><div><strong>Transition matrices</strong><span>Quantified category-to-category change for each interval.</span></div></div>
+      <div class="check"><div class="ok">✓</div><div><strong>Water-corridor buffer report</strong><span>Natural retention and impervious gain within 100 m of water.</span></div></div>
+      <div class="check"><div class="ok">✓</div><div><strong>Natural-retention layer</strong><span>Patch-level survival of natural vegetation, 2002 vs. 2023.</span></div></div>
+      <div class="check"><div class="ok">✓</div><div><strong>Land Memory Map</strong><span>The full study area classified into the three memory types.</span></div></div>
+      <div class="check"><div class="ok">✓</div><div><strong>Four place stories</strong><span>Field-documented narratives tied to their underlying layers.</span></div></div>
+      <div class="check"><div class="ok">✓</div><div><strong>Open method note</strong><span>Reproducible workflow so the method can be reapplied elsewhere.</span></div></div>
+      <div class="check"><div class="ok">✓</div><div><strong>Interactive web platform</strong><span>Seven linked views over the same verified data.</span></div></div>
+    </div>
+
+    <h3 style="font-size:22px; margin-top:56px">Feasibility<span class="zh">可行性评估</span></h3>
+    <div class="grid g3" style="margin-top:24px">
+      <div class="feas"><div class="lbl">Data availability</div><div class="val">Very strong</div><div class="track"><div class="fill" data-w="94"></div></div></div>
+      <div class="feas"><div class="lbl">Temporal depth</div><div class="val">Strong · 21 years</div><div class="track"><div class="fill" data-w="86"></div></div></div>
+      <div class="feas"><div class="lbl">Study-area scale</div><div class="val">Very manageable</div><div class="track"><div class="fill" data-w="92"></div></div></div>
+      <div class="feas"><div class="lbl">Field access</div><div class="val">Direct</div><div class="track"><div class="fill" data-w="88"></div></div></div>
+      <div class="feas"><div class="lbl">Method transferability</div><div class="val">High</div><div class="track"><div class="fill" data-w="83"></div></div></div>
+      <div class="feas"><div class="lbl">Computational demand</div><div class="val">Low – moderate</div><div class="track"><div class="fill" data-w="70"></div></div></div>
+    </div>
+
+    <div class="limits">
+      <h4>Limitations &amp; Honest Caveats<span class="zh" style="color:var(--dimmer)">研究限制</span></h4>
+      <ul>
+        <li><strong>Photo-year nuance.</strong> Watershed-wide air photo coverage for the earliest slice spans 2002–2003; “2002” in this study means that coverage epoch, not a single date.</li>
+        <li><strong>Classification drift.</strong> Mapping methods and minimum mapping units changed between coverages. Apparent change near class boundaries may be methodological rather than real, so results are reported at patch level rather than per-pixel.</li>
+        <li><strong>Three snapshots are not a continuous record.</strong> Land that was cleared and regrew — or was disturbed and restored — between slices is invisible to this design.</li>
+        <li><strong>A 100 m buffer is a convention, not an ecological threshold.</strong> It is used for comparability; sensitivity is tested at 30 m and 250 m.</li>
+        <li><strong>Correlation, not causation.</strong> The platform documents spatial change; it does not attribute that change to specific policy or development decisions.</li>
+        <li><strong>Personal and local memory is testimony, not measurement.</strong> Place stories are presented as a distinct kind of evidence, never merged into the quantitative layers.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FUTURE STUDIES ================= -->
+<section class="alt" id="future">
+  <div class="container">
+    <div class="eyebrow">Future Studies</div>
+    <h2 class="section-title">The Method Is Built to Travel<span class="zh">Whitehorse、Inuvik 及未来案例方向</span></h2>
+    <p class="lead">Aurora is a controlled first case: small, well-documented, and close enough to visit. But the underlying question — what does a landscape remember? — matters most where the record is changing fastest.</p>
+
+    <div class="split" style="margin-top:38px">
+      <div>
+        <div class="grid" style="gap:16px">
+          <div class="card" style="padding:22px">
+            <span class="tag frag">Case 02 · Proposed</span>
+            <h3 style="font-size:20px; margin-top:12px">Whitehorse, Yukon</h3>
+            <p style="color:var(--dim); font-size:14.5px; margin-top:10px">A northern city on a major river system, where valley terraces, boreal forest and rapid municipal growth intersect. Tests whether the memory classification holds in a subarctic, low-density setting.</p>
+          </div>
+          <div class="card" style="padding:22px">
+            <span class="tag frag">Case 03 · Proposed</span>
+            <h3 style="font-size:20px; margin-top:12px">Inuvik, Northwest Territories</h3>
+            <p style="color:var(--dim); font-size:14.5px; margin-top:10px">Where land memory is stored in permafrost. Thaw ponds, subsidence and shifting drainage make the traces of time visible on a decade scale rather than a century one — and connect directly to Edward’s permafrost modelling work.</p>
+          </div>
+        </div>
+      </div>
+      <figure class="figure">
+        <img src="https://cm-idea-images.s3.us-west-1.amazonaws.com/1784858434084-image-1.png" alt="Aerial view of a northern landscape with thaw ponds, braided river and boreal forest" />
+        <figcaption>Northern landscapes — where the record of time is written in ice</figcaption>
+      </figure>
+    </div>
+
+    <div class="eyebrow" style="margin-top:70px">Earth-System Significance</div>
+    <h3 style="font-size:clamp(24px,3vw,34px)">Why This Scales</h3>
+    <div class="grid g3" style="margin-top:26px">
+      <div class="card"><div class="icon-sq">🌍</div><h4 style="font-size:17px; margin-top:14px">A general question</h4><p style="color:var(--dim); font-size:14px; margin-top:10px">How landscapes retain, fragment and rewrite their records is an Earth-system question, not a local one.</p></div>
+      <div class="card"><div class="icon-sq">📍</div><h4 style="font-size:17px; margin-top:14px">A verifiable field site</h4><p style="color:var(--dim); font-size:14px; margin-top:10px">Aurora provides a concrete, fully documented case where the framework can be tested against official data.</p></div>
+      <div class="card"><div class="icon-sq">🧭</div><h4 style="font-size:17px; margin-top:14px">A portable method</h4><p style="color:var(--dim); font-size:14px; margin-top:10px">The same workflow applies wherever multi-date land cover and hydrology layers exist — north, south, or overseas.</p></div>
+    </div>
+
+    <div class="eyebrow" style="margin-top:70px">Research Profile</div>
+    <h3 style="font-size:clamp(24px,3vw,34px)">Founder &amp; GIS Researcher, Land Memory Lab</h3>
+    <p class="lead">Founded a dynamic GIS research platform exploring how landscapes carry the traces of time through water, vegetation, landforms, and human activity. Developed <em>Beneath Aurora</em> as the first case study, using official GIS data from 2002, 2013, and 2023 to map natural-land retention, water-corridor fragmentation, and urban transformation.</p>
+    <p class="lead-zh">创立动态 GIS 环境研究平台，探索水、植被、地貌与人类活动如何在景观中留下时间的痕迹。以 Aurora 为首个案例，整合 2002、2013 和 2023 年的官方 GIS 数据，分析自然土地保留、水系走廊破碎化与城市空间转变。</p>
+
+    <blockquote>
+      <p>“Edward studies how landscapes carry the traces of time — how water, vegetation, and human decisions together shape the environmental record of a place.”</p>
+      <span class="zh">Edward 关注景观如何承载时间留下的痕迹。他通过环境建模、GIS、水文学和视觉叙事，研究水、植被与人类决策如何共同塑造一片土地的环境记录。</span>
+    </blockquote>
+
+    <div class="eyebrow" style="margin-top:20px">Academic Alignment</div>
+    <div class="schools">
+      <div class="school"><strong>Cornell — Earth &amp; Climate Sciences</strong><span>Hydrology, earth materials, land–water systems, field and spatial research</span></div>
+      <div class="school"><strong>WashU — Environmental Earth Science</strong><span>GIS, remote sensing, surface process, multiple landscape cases</span></div>
+      <div class="school"><strong>Johns Hopkins — Environmental Science</strong><span>Environmental systems, GIS, data communication</span></div>
+      <div class="school"><strong>Emory — Environmental Sciences</strong><span>Landscape ecology, water resources, GIS, human–environment relationships</span></div>
+      <div class="school"><strong>Vanderbilt — Earth &amp; Environmental Sciences</strong><span>Landscape evolution, surface process, place-based environmental research</span></div>
+      <div class="school"><strong>UChicago — Environmental / Geophysical Sciences</strong><span>Landscape as historical record, data interpretation</span></div>
+    </div>
+
+    <div class="cta-banner">
+      <h3>Every landscape is a record. Most of it is still readable.</h3>
+      <p>Land Memory Lab starts with one town, three time slices, and a set of official layers — and asks what a place has kept, what it has broken, and what it has rewritten.</p>
+      <div class="ctas" style="justify-content:center">
+        <a class="btn btn-p" href="#aurora">Revisit Beneath Aurora</a>
+        <a class="btn btn-g" href="#data">See the Data</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <span class="brand"><span class="dot"></span><span>Land Memory Lab<small>土地记忆实验室</small></span></span>
+    <div class="srcs">Data: Lake Simcoe Region Conservation Authority · Ontario GeoHub · Town of Aurora Data Hub · Ontario Geological Survey · Natural Resources Canada · Oak Ridges Moraine Groundwater Program</div>
+  </div>
+</footer>
+
+<script>
+/* ---------- language toggle ---------- */
+(function(){
+  var states=['both','en','zh'], i=0;
+  function apply(){
+    document.body.classList.remove('hide-zh','hide-en');
+    if(states[i]==='en') document.body.classList.add('hide-zh');
+    if(states[i]==='zh') document.body.classList.add('hide-en');
+    var label = states[i]==='both' ? '中 / EN' : (states[i]==='en' ? 'EN' : '中文');
+    ['langbtn','langbtn2'].forEach(function(id){var b=document.getElementById(id); if(b) b.textContent=label;});
+  }
+  ['langbtn','langbtn2'].forEach(function(id){
+    var b=document.getElementById(id);
+    if(b) b.addEventListener('click',function(){ i=(i+1)%states.length; apply(); });
+  });
+})();
+
+/* ---------- reveal on scroll ---------- */
+(function(){
+  document.querySelectorAll('section .container > *').forEach(function(el){ el.classList.add('reveal'); });
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        e.target.querySelectorAll('.fill').forEach(function(f){ f.style.width=f.dataset.w+'%'; });
+        io.unobserve(e.target);
+      }
+    });
+  },{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+
+/* ---------- charts ---------- */
+Chart.defaults.color='#a3abb9';
+Chart.defaults.font.family="'Inter', sans-serif";
+Chart.defaults.borderColor='rgba(255,255,255,0.06)';
+Chart.defaults.font.size=12;
+
+var C={acc:'#3da7ff', soft:'#80e0d0', gold:'#e9b949', moss:'#6fbf73', clay:'#e0834f', grey:'#5c6474'};
+function vgrad(ctx,c1,c2){
+  var g=ctx.createLinearGradient(0,0,0,280);
+  g.addColorStop(0,c1); g.addColorStop(1,c2); return g;
+}
+
+/* 1 — land cover composition, stacked */
+new Chart(document.getElementById('chartCover'),{
+  type:'bar',
+  data:{
+    labels:['2002','2013','2023'],
+    datasets:[
+      {label:'Natural vegetation',data:[34,31,28],backgroundColor:C.moss,borderRadius:3},
+      {label:'Water & wetlands',data:[11,10,10],backgroundColor:C.acc,borderRadius:3},
+      {label:'Built land',data:[27,34,42],backgroundColor:C.clay,borderRadius:3},
+      {label:'Other land',data:[28,25,20],backgroundColor:C.grey,borderRadius:3}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,padding:14,usePointStyle:true,pointStyle:'circle'}}},
+    scales:{
+      x:{stacked:true,grid:{display:false}},
+      y:{stacked:true,max:100,ticks:{callback:function(v){return v+'%'}},grid:{color:'rgba(255,255,255,.05)'}}
+    }
+  }
+});
+
+/* 2 — memory classes doughnut */
+new Chart(document.getElementById('chartMem'),{
+  type:'doughnut',
+  data:{
+    labels:['Persistent','Fragmented','Transformed'],
+    datasets:[{data:[41,33,26],backgroundColor:[C.soft,C.gold,C.clay],borderColor:'#161a24',borderWidth:3,hoverOffset:8}]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'62%',
+    plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,padding:14,usePointStyle:true,pointStyle:'circle'}}}
+  }
+});
+
+/* 3 — impervious within 100 m of water */
+(function(){
+  var ctx=document.getElementById('chartBuffer').getContext('2d');
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:['2002','2013','2023'],
+      datasets:[
+        {label:'Natural cover within buffer',data:[71,65,59],borderColor:C.soft,backgroundColor:vgrad(ctx,'rgba(128,224,208,.30)','rgba(128,224,208,0)'),fill:true,tension:.35,borderWidth:2.5,pointRadius:4,pointBackgroundColor:C.soft},
+        {label:'Impervious within buffer',data:[8,13,19],borderColor:C.clay,backgroundColor:'transparent',tension:.35,borderWidth:2.5,pointRadius:4,pointBackgroundColor:C.clay,borderDash:[5,4]}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,padding:14,usePointStyle:true,pointStyle:'circle'}}},
+      scales:{y:{max:100,ticks:{callback:function(v){return v+'%'}},grid:{color:'rgba(255,255,255,.05)'}},x:{grid:{display:false}}}
+    }
+  });
+})();
+
+/* 4 — index indicator weights */
+new Chart(document.getElementById('chartIndex'),{
+  type:'bar',
+  data:{
+    labels:['Natural patch retention','Buffer imperviousness','Patch connectivity','Edge density','New road crossings','Distance to built edge'],
+    datasets:[{data:[27,22,18,13,12,8],backgroundColor:[C.soft,C.acc,C.moss,C.gold,C.clay,C.grey],borderRadius:4,barThickness:16}]
+  },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{max:30,ticks:{callback:function(v){return v+'%'}},grid:{color:'rgba(255,255,255,.05)'}},y:{grid:{display:false}}}
+  }
+});
+
+/* ---------- responsive nav lang button ---------- */
+(function(){
+  function sync(){
+    var b2=document.getElementById('langbtn2');
+    if(!b2) return;
+    b2.style.display = window.innerWidth<=1080 ? 'inline-block' : 'none';
+  }
+  window.addEventListener('resize',sync); sync();
+})();
+</script>
+</body>
+</html>
